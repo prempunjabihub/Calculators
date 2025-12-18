@@ -1,0 +1,487 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  Calculator, 
+  TrendingUp, 
+  DollarSign, 
+  Clock, 
+  Percent, 
+  ArrowRight, 
+  CheckCircle, 
+  AlertCircle,
+  PiggyBank
+} from 'lucide-react';
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  ReferenceLine
+} from 'recharts';
+
+const Card = ({ children, className = "" }) => (
+  <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden ${className}`}>
+    {children}
+  </div>
+);
+
+export default function InterestFreeLoanCalculator() {
+  // --- State ---
+  const [loanAmount, setLoanAmount] = useState(1000000);
+  const [interestRate, setInterestRate] = useState(8.5);
+  const [baseTenure, setBaseTenure] = useState(3);
+  const [extendedTenure, setExtendedTenure] = useState(7);
+  const [sipReturnRate, setSipReturnRate] = useState(12);
+
+  // --- Calculations ---
+  const results = useMemo(() => {
+    // Basic formatting helpers
+    const toCurrency = (val) => Math.round(val);
+
+    // 1. Base Scenario (Standard Loan)
+    const baseRateMonthly = interestRate / 12 / 100;
+    const baseMonths = baseTenure * 12;
+    
+    const baseEMI = (loanAmount * baseRateMonthly * Math.pow(1 + baseRateMonthly, baseMonths)) / 
+                    (Math.pow(1 + baseRateMonthly, baseMonths) - 1);
+    
+    const baseTotalPayment = baseEMI * baseMonths;
+    const baseTotalInterest = baseTotalPayment - loanAmount;
+
+    // 2. Extended Scenario (Lower EMI)
+    const extRateMonthly = interestRate / 12 / 100;
+    const extMonths = extendedTenure * 12;
+    
+    // Validate tenure (must be longer)
+    const safeExtMonths = Math.max(extMonths, baseMonths + 1);
+    
+    const extEMI = (loanAmount * extRateMonthly * Math.pow(1 + extRateMonthly, safeExtMonths)) / 
+                   (Math.pow(1 + extRateMonthly, safeExtMonths) - 1);
+
+    // 3. SIP Strategy
+    const monthlyDifference = Math.max(0, baseEMI - extEMI);
+    const sipMonthlyRate = sipReturnRate / 12 / 100;
+    
+    // Future Value of SIP: P * [ (1+i)^n - 1 ] / i * (1+i)
+    // We assume SIP continues for the full extended tenure to keep "outflow" consistent conceptually
+    const sipValue = monthlyDifference * ((Math.pow(1 + sipMonthlyRate, safeExtMonths) - 1) / sipMonthlyRate) * (1 + sipMonthlyRate);
+    
+    // Calculate SIP Gains (Returns) specifically
+    const totalSipInvestment = monthlyDifference * safeExtMonths;
+    const sipGains = sipValue - totalSipInvestment;
+
+    const extTotalPayment = extEMI * safeExtMonths;
+    const extTotalInterest = extTotalPayment - loanAmount;
+    
+    // Net Effective Interest Calculation (Revised: Interest Cost - SIP Gains)
+    const netInterestCost = extTotalInterest - sipGains;
+    
+    // Success Metrics
+    // "Interest Free" if Gains cover the Interest Cost
+    const isInterestFree = sipGains >= extTotalInterest; 
+
+    // --- Chart Data Generation ---
+    const chartData = [];
+    
+    // Loop through years for the chart (showing data points every year)
+    const totalYears = Math.max(baseTenure, extendedTenure);
+    
+    for (let year = 0; year <= totalYears; year++) {
+      const month = year * 12;
+
+      // Calculate Loan Balances
+      // Helper to get remaining balance at month M
+      const getBalance = (p, r, n, emi, currentM) => {
+        if (currentM >= n) return 0;
+        // Balance = P(1+r)^m - (EMI/r)*((1+r)^m - 1)
+        const part1 = p * Math.pow(1 + r, currentM);
+        const part2 = (emi / r) * (Math.pow(1 + r, currentM) - 1);
+        return Math.max(0, part1 - part2);
+      };
+
+      const bal1 = getBalance(loanAmount, baseRateMonthly, baseMonths, baseEMI, month);
+      const bal2 = getBalance(loanAmount, extRateMonthly, safeExtMonths, extEMI, month);
+
+      // Calculate SIP Value at this month
+      let curSipValue = 0;
+      if (month > 0 && month <= safeExtMonths) {
+         curSipValue = monthlyDifference * ((Math.pow(1 + sipMonthlyRate, month) - 1) / sipMonthlyRate) * (1 + sipMonthlyRate);
+      } else if (month > safeExtMonths) {
+         curSipValue = sipValue; 
+      }
+
+      chartData.push({
+        year,
+        "Standard Loan Balance": Math.round(bal1),
+        "Extended Loan Balance": Math.round(bal2),
+        "SIP Value": Math.round(curSipValue),
+      });
+    }
+
+    return {
+      base: {
+        emi: baseEMI,
+        totalInterest: baseTotalInterest,
+        totalPayment: baseTotalPayment
+      },
+      extended: {
+        emi: extEMI,
+        totalInterest: extTotalInterest,
+        totalPayment: extTotalPayment,
+        monthlyDiff: monthlyDifference,
+        sipMaturity: sipValue,
+        sipGains: sipGains,
+        netInterestCost: netInterestCost,
+        months: safeExtMonths
+      },
+      chartData,
+      isInterestFree
+    };
+
+  }, [loanAmount, interestRate, baseTenure, extendedTenure, sipReturnRate]);
+
+  // Formatters
+  const formatCurrency = (val) => 
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 md:p-8 font-sans text-slate-900">
+      <div className="max-w-7xl mx-auto space-y-6">
+        
+        {/* Header */}
+        <div className="text-center md:text-left mb-8">
+          <h1 className="text-3xl font-bold text-slate-800 flex items-center justify-center md:justify-start gap-3">
+            <Calculator className="w-8 h-8 text-blue-600" />
+            Smart Loan Optimizer
+          </h1>
+          <p className="text-slate-500 mt-2 text-lg">
+            See how extending your loan tenure while investing the EMI savings can make your loan effectively interest-free.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Controls Section */}
+          <div className="lg:col-span-4 space-y-6">
+            <Card className="p-6 sticky top-6">
+              <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-blue-600" />
+                Input Parameters
+              </h2>
+
+              <div className="space-y-6">
+                {/* Loan Amount */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Loan Amount</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
+                    <input 
+                      type="number" 
+                      value={loanAmount}
+                      onChange={(e) => setLoanAmount(Number(e.target.value))}
+                      className="w-full pl-8 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                    />
+                  </div>
+                  <input 
+                    type="range" 
+                    min="100000" max="20000000" step="100000" 
+                    value={loanAmount}
+                    onChange={(e) => setLoanAmount(Number(e.target.value))}
+                    className="w-full mt-2 accent-blue-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+
+                {/* Interest Rate */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Interest Rate (%)</label>
+                  <div className="relative">
+                    <Percent className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input 
+                      type="number" 
+                      value={interestRate}
+                      onChange={(e) => setInterestRate(Number(e.target.value))}
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </div>
+                  <input 
+                    type="range" 
+                    min="1" max="15" step="0.1" 
+                    value={interestRate}
+                    onChange={(e) => setInterestRate(Number(e.target.value))}
+                    className="w-full mt-2 accent-blue-600 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+
+                {/* Tenures Comparison */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Standard Tenure (Yrs)</label>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="number" 
+                        value={baseTenure}
+                        onChange={(e) => {
+                          const val = Number(e.target.value);
+                          setBaseTenure(val);
+                          if(val >= extendedTenure) setExtendedTenure(val + 5);
+                        }}
+                        className="w-full pl-10 pr-2 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Extended Tenure (Yrs)</label>
+                    <div className="relative">
+                      <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input 
+                        type="number" 
+                        value={extendedTenure}
+                        onChange={(e) => setExtendedTenure(Number(e.target.value))}
+                        className={`w-full pl-10 pr-2 py-3 bg-slate-50 border rounded-xl focus:ring-2 outline-none ${extendedTenure <= baseTenure ? 'border-red-300 ring-2 ring-red-100' : 'border-slate-200 focus:ring-blue-500'}`}
+                      />
+                    </div>
+                  </div>
+                </div>
+                {extendedTenure <= baseTenure && (
+                  <p className="text-xs text-red-500 -mt-4">Extended tenure must be greater than standard tenure.</p>
+                )}
+
+                {/* SIP Return */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Expected SIP Return (%)</label>
+                  <div className="relative">
+                    <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input 
+                      type="number" 
+                      value={sipReturnRate}
+                      onChange={(e) => setSipReturnRate(Number(e.target.value))}
+                      className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                    />
+                  </div>
+                  <input 
+                    type="range" 
+                    min="5" max="25" step="0.5" 
+                    value={sipReturnRate}
+                    onChange={(e) => setSipReturnRate(Number(e.target.value))}
+                    className="w-full mt-2 accent-emerald-500 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Results Section */}
+          <div className="lg:col-span-8 space-y-6">
+            
+            {/* Top Cards Comparison */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Card A: Standard */}
+              <Card className="p-6 border-l-4 border-l-slate-400">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-slate-500 font-medium text-sm uppercase tracking-wider">Scenario A</h3>
+                    <p className="text-lg font-bold text-slate-800">Standard Loan</p>
+                  </div>
+                  <div className="bg-slate-100 p-2 rounded-lg">
+                    <Clock className="w-5 h-5 text-slate-600" />
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-between items-end">
+                    <span className="text-slate-500">Monthly EMI</span>
+                    <span className="text-2xl font-bold text-slate-800">{formatCurrency(results.base.emi)}</span>
+                  </div>
+                  <div className="w-full bg-slate-100 h-px"></div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Duration</span>
+                    <span className="font-medium">{baseTenure} Years</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Total Interest</span>
+                    <span className="font-medium text-red-500">{formatCurrency(results.base.totalInterest)}</span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Card B: Smart Strategy */}
+              <Card className="p-6 border-l-4 border-l-emerald-500 bg-emerald-50/30">
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-emerald-600 font-medium text-sm uppercase tracking-wider">Scenario B</h3>
+                    <p className="text-lg font-bold text-emerald-900">Extended + SIP</p>
+                  </div>
+                  <div className="bg-emerald-100 p-2 rounded-lg">
+                    <PiggyBank className="w-5 h-5 text-emerald-600" />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-end">
+                    <span className="text-slate-500">New EMI</span>
+                    <span className="text-2xl font-bold text-emerald-700">{formatCurrency(results.extended.emi)}</span>
+                  </div>
+                  
+                  <div className="bg-emerald-100 rounded-lg p-3 flex justify-between items-center text-sm text-emerald-800">
+                    <div className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>Invest Difference</span>
+                    </div>
+                    <span className="font-bold">{formatCurrency(results.extended.monthlyDiff)} / mo</span>
+                  </div>
+
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-500">Duration</span>
+                    <span className="font-medium">{extendedTenure} Years</span>
+                  </div>
+                </div>
+              </Card>
+            </div>
+
+            {/* Verdict Card */}
+            <Card className="p-0 overflow-hidden">
+              <div className="p-6 bg-slate-800 text-white">
+                <h3 className="text-lg font-semibold mb-1">Projected Outcome (After {extendedTenure} Years)</h3>
+                <p className="text-slate-300 text-sm">By maintaining the same total monthly outflow of {formatCurrency(results.base.emi)}...</p>
+              </div>
+              
+              <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                   <p className="text-xs font-semibold text-slate-400 uppercase mb-1">Total Loan Interest</p>
+                   <p className="text-xl font-bold text-slate-800">{formatCurrency(results.extended.totalInterest)}</p>
+                   <p className="text-xs text-slate-500 mt-1">Paid to Bank</p>
+                </div>
+                <div className="md:border-l md:border-r border-slate-100 md:px-8">
+                   <p className="text-xs font-semibold text-emerald-600 uppercase mb-1">SIP Gains (Returns)</p>
+                   <p className="text-xl font-bold text-emerald-600">{formatCurrency(results.extended.sipGains)}</p>
+                   <p className="text-xs text-slate-500 mt-1">Total Maturity: {formatCurrency(results.extended.sipMaturity)}</p>
+                </div>
+                <div>
+                   <p className="text-xs font-semibold text-blue-600 uppercase mb-1">Net Effective Interest</p>
+                   <p className={`text-xl font-bold ${results.extended.netInterestCost < 0 ? 'text-emerald-600' : 'text-slate-800'}`}>
+                     {formatCurrency(Math.abs(results.extended.netInterestCost))}
+                     {results.extended.netInterestCost < 0 ? ' (Gain)' : ' (Cost)'}
+                   </p>
+                   <p className="text-xs text-slate-500 mt-1">
+                     {results.isInterestFree ? 'Interest Fully Recovered!' : 'Interest Partially Recovered'}
+                   </p>
+                </div>
+              </div>
+
+              {results.isInterestFree && (
+                 <div className="bg-emerald-100 px-6 py-3 flex items-center gap-2 text-emerald-800 text-sm font-medium">
+                   <CheckCircle className="w-5 h-5" />
+                   Success! Your SIP returns alone cover the entire loan interest cost.
+                 </div>
+              )}
+            </Card>
+
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+               <Card className="p-6">
+                 <h3 className="font-semibold text-slate-700 mb-6">Wealth vs Debt Timeline</h3>
+                 <div className="h-64">
+                   <ResponsiveContainer width="100%" height="100%">
+                     <LineChart data={results.chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                       <XAxis 
+                         dataKey="year" 
+                         axisLine={false} 
+                         tickLine={false} 
+                         tick={{ fill: '#64748b', fontSize: 12 }}
+                         dy={10}
+                       />
+                       <YAxis 
+                         axisLine={false} 
+                         tickLine={false} 
+                         tick={{ fill: '#64748b', fontSize: 12 }}
+                         tickFormatter={(val) => `₹${val/100000}L`}
+                       />
+                       <Tooltip 
+                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                         formatter={(val) => formatCurrency(val)}
+                       />
+                       <Legend />
+                       <Line 
+                         type="monotone" 
+                         dataKey="Standard Loan Balance" 
+                         stroke="#94a3b8" 
+                         strokeWidth={2} 
+                         dot={false}
+                         strokeDasharray="5 5"
+                       />
+                       <Line 
+                         type="monotone" 
+                         dataKey="Extended Loan Balance" 
+                         stroke="#3b82f6" 
+                         strokeWidth={2} 
+                         dot={false}
+                       />
+                       <Line 
+                         type="monotone" 
+                         dataKey="SIP Value" 
+                         stroke="#10b981" 
+                         strokeWidth={2} 
+                         dot={false}
+                       />
+                     </LineChart>
+                   </ResponsiveContainer>
+                 </div>
+               </Card>
+
+               <Card className="p-6">
+                  <h3 className="font-semibold text-slate-700 mb-6">Financial Impact</h3>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart 
+                        layout="vertical"
+                        data={[
+                          { name: 'Standard', interest: results.base.totalInterest, gain: 0 },
+                          { name: 'Extended', interest: results.extended.totalInterest, gain: -results.extended.sipGains }
+                        ]}
+                        margin={{ top: 0, right: 30, left: 30, bottom: 0 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+                        <XAxis type="number" hide />
+                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} />
+                        <Tooltip formatter={(val) => formatCurrency(Math.abs(val))} cursor={{fill: 'transparent'}} />
+                        <ReferenceLine x={0} stroke="#cbd5e1" />
+                        <Bar dataKey="interest" name="Interest Paid" fill="#ef4444" radius={[0, 4, 4, 0]} barSize={30} />
+                        <Bar dataKey="gain" name="SIP Returns (Offset)" fill="#10b981" radius={[4, 0, 0, 4]} barSize={30} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="mt-4 text-center text-xs text-slate-500">
+                    Red bars show Interest Paid. Green bars show Investment Returns (Gains).
+                  </div>
+               </Card>
+            </div>
+
+            {/* Strategy Explanation */}
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-6">
+              <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5" />
+                How this works
+              </h3>
+              <p className="text-blue-800 text-sm leading-relaxed">
+                In <strong>Scenario A</strong>, you pay a higher EMI of <strong>{formatCurrency(results.base.emi)}</strong> for <strong>{baseTenure} years</strong>.
+                <br /><br />
+                In <strong>Scenario B</strong>, you extend the loan to <strong>{extendedTenure} years</strong>. This drops your EMI to <strong>{formatCurrency(results.extended.emi)}</strong>. 
+                Crucially, you don't spend the savings! Instead, you invest the difference of <strong>{formatCurrency(results.extended.monthlyDiff)}</strong> into a monthly SIP.
+                <br /><br />
+                By keeping your "Monthly Outflow" the same as Scenario A, your investments compound over time. The calculator checks if your <strong>Investment Profits</strong> ({sipReturnRate}%) cover your <strong>Total Loan Interest</strong> ({interestRate}%).
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
