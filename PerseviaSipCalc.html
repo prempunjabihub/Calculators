@@ -1,1 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Persevia SIP Calculator</title>
+    <style>
+        :root {
+            --primary: #0f172a; /* Midnight Blue */
+            --accent: #3b82f6; /* Bright Blue */
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            
+            /* Chart Colors */
+            --c-core: #3b82f6;
+            --c-mid: #f59e0b;
+            --c-small: #ef4444;
+            --c-hybrid: #06b6d4;
+            --c-debt: #10b981;
+        }
 
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Changed to start to allow scrolling */
+            padding: 20px;
+            box-sizing: border-box;
+            padding-bottom: 100px; /* Space for footer */
+        }
+
+        /* Main Dashboard Container */
+        .dashboard-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+            background: var(--card-bg);
+            width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* TABLET LANDSCAPE & DESKTOP (> 900px) */
+        @media (min-width: 900px) {
+            .dashboard {
+                grid-template-columns: 380px 1fr;
+                min-height: 700px;
+            }
+        }
+
+        /* MOBILE & TABLET PORTRAIT (< 900px) */
+        @media (max-width: 899px) {
+            body {
+                padding: 10px;
+                padding-bottom: 80px;
+            }
+            .dashboard {
+                display: flex;
+                flex-direction: column;
+                border-radius: 16px;
+            }
+            .panel-left {
+                padding: 25px 20px !important;
+            }
+            .panel-right {
+                padding: 25px 20px !important;
+                background: #f8fafc;
+            }
+            .header-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .donut-wrapper {
+                width: 100% !important;
+                margin-bottom: 20px;
+            }
+            .donut-chart {
+                width: 160px !important;
+                height: 160px !important;
+            }
+            .donut-hole {
+                width: 110px !important;
+                height: 110px !important;
+            }
+        }
+
+        /* LEFT PANEL: Inputs */
+        .panel-left {
+            background: var(--primary);
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .brand {
+            margin-bottom: 30px;
+            flex-shrink: 0;
+        }
+        .brand div { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
+        .brand span { color: var(--accent); }
+        /* Subtitle removed as requested */
+
+        .input-group { margin-bottom: 25px; transition: all 0.3s ease; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #94a3b8;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Number Inputs */
+        input[type="number"], select {
+            width: 100%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+
+        /* Specific width for inputs next to sliders */
+        .input-row input[type="number"] {
+            width: 80px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        select option { background: var(--primary); color: white; }
+
+        input[type="number"]:focus, select:focus {
+            background: rgba(255,255,255,0.15);
+            border-color: var(--accent);
+            outline: none;
+        }
+
+        /* Utility Class - Fixed with !important */
+        .hidden { display: none !important; }
+
+        /* Range Slider */
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+            cursor: pointer;
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+
+        /* Settings Area (Returns) */
+        .settings-toggle {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+            margin-bottom: 15px;
+            text-align: left;
+            display: inline-block;
+        }
+        .settings-toggle:hover { color: var(--accent); }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .settings-item label { font-size: 0.7rem; margin-bottom: 4px; color: #cbd5e1; }
+        .settings-item input { padding: 8px; font-size: 0.9rem; text-align: right; }
+
+
+        /* RIGHT PANEL: Results */
+        .panel-right {
+            padding: 40px;
+            background: #fff;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .welcome-state {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-sub);
+            text-align: center;
+            min-height: 200px;
+        }
+
+        .results-content { display: none; width: 100%; }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+
+        .strategy-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: #e0f2fe;
+            color: #0369a1;
+            margin-bottom: 6px;
+        }
+        
+        .strategy-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        /* Warnings */
+        .warning-box {
+            background: #fffbeb;
+            border: 1px solid #fcd34d;
+            color: #92400e;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Chart & List Layout */
+        .viz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        @media (min-width: 900px) {
+            .viz-container {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        /* Donut Chart */
+        .donut-wrapper {
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 220px;
+        }
+        .donut-chart {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            position: relative;
+            transition: background 0.3s ease; 
+        }
+
+        .donut-hole {
+            width: 140px;
+            height: 140px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
+            z-index: 2;
+        }
+        
+        .donut-total-label { font-size: 0.7rem; color: var(--text-sub); text-transform: uppercase; font-weight: 600; }
+        .donut-total-val { font-size: 1.1rem; font-weight: 800; color: var(--text-main); text-align: center; line-height: 1.2; margin-top: 4px; }
+
+        /* Allocation List */
+        .allocation-list { flex-grow: 1; width: 100%; }
+
+        .alloc-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #f1f5f9;
+        }
+        
+        .color-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .alloc-info { flex-grow: 1; }
+        .alloc-name { font-weight: 600; font-size: 0.9rem; display: block; color: var(--text-main); }
+        .alloc-amt { font-size: 0.8rem; color: var(--text-sub); }
+        .alloc-pct { font-weight: 700; font-size: 1rem; color: var(--text-main); }
+
+        /* PROJECTION CARD */
+        .projection-card {
+            margin-top: 30px;
+            background: var(--primary);
+            color: white;
+            border-radius: 16px;
+            padding: 20px 25px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .proj-item small { display: block; opacity: 0.7; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
+        .proj-item div { font-size: 1.1rem; font-weight: 700; }
+        
+        /* Updated Colors per user request */
+        .proj-item.highlight div { color: #4ade80; font-size: 1.3rem; } /* Light Green */
+        #valTotal { color: #22c55e; } /* Green */
+        
+        @media (max-width: 600px) {
+            .projection-card { grid-template-columns: 1fr; text-align: left; }
+            .proj-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 10px; }
+            .proj-item:last-child { border: none; margin: 0; padding: 0; }
+        }
+
+        /* MOBILE STICKY SUMMARY BAR */
+        .mobile-sticky-bar {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        @media (max-width: 899px) {
+            /* Show only if results are visible */
+            body.results-active .mobile-sticky-bar { display: flex; }
+        }
+        
+        .ms-label { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; }
+        .ms-val { font-size: 1.2rem; font-weight: 700; color: var(--c-debt); }
+        .ms-icon { font-size: 0.9rem; background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 15px; }
+
+        /* ADVANCED LOGIC EDITOR (BOTTOM) */
+        .logic-container {
+            width: 100%;
+            background: #e2e8f0; /* Light Grey as requested */
+            border-radius: 16px;
+            padding: 25px;
+            box-sizing: border-box;
+            color: var(--text-main);
+        }
+
+        .logic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .logic-title { font-weight: 700; color: #475569; font-size: 1.1rem; }
+        
+        .logic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .logic-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .logic-card-header {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .logic-card.active-profile {
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+        }
+        
+        .logic-card.active-profile .logic-card-header { color: var(--accent); }
+
+        .alloc-input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .alloc-input-row label { margin: 0; color: #64748b; font-weight: 400; }
+        .alloc-input-row input {
+            width: 50px;
+            padding: 4px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            color: var(--text-main);
+            background: #f8fafc;
+        }
+
+        /* Colors for JS */
+        .c-core { background-color: var(--c-core); }
+        .c-mid { background-color: var(--c-mid); }
+        .c-small { background-color: var(--c-small); }
+        .c-hybrid { background-color: var(--c-hybrid); }
+        .c-debt { background-color: var(--c-debt); }
+
+    </style>
+</head>
+<body onload="initLogicEditor(); toggleInputs(); generatePlan();">
+
+    <div class="dashboard-wrapper">
+        <div class="dashboard">
+            <!-- LEFT PANEL -->
+            <div class="panel-left">
+                <div class="brand">
+                    <div>Persevia <span>FinSolutions</span></div>
+                </div>
+
+                <div class="input-group">
+                    <label>Investment Mode</label>
+                    <select id="invMode" onchange="toggleInputs();">
+                        <option value="lumpsum">Lumpsum Only</option>
+                        <option value="sip" selected>SIP Only</option>
+                        <option value="both">Both (Lumpsum + SIP)</option>
+                    </select>
+                </div>
+
+                <!-- AGE (Default 25) -->
+                <div class="input-group">
+                    <label>Client Age</label>
+                    <div class="input-row">
+                        <input type="range" id="ageRange" min="1" max="90" value="25" oninput="syncInputs('ageRange', 'ageInput')">
+                        <input type="number" id="ageInput" value="25" oninput="syncInputs('ageInput', 'ageRange')">
+                    </div>
+                </div>
+
+                <!-- LUMPSUM -->
+                <div class="input-group" id="grp-lumpsum">
+                    <label>Lumpsum Amount (₹)</label>
+                    <input type="number" id="amountLumpsum" placeholder="e.g. 500000" value="0" oninput="generatePlan()">
+                </div>
+
+                <!-- SIP (Default 10000) -->
+                <div class="input-group" id="grp-sip">
+                    <label>Monthly SIP (₹)</label>
+                    <div class="input-row">
+                        <input type="range" id="sipRange" min="500" max="100000" step="500" value="10000" oninput="syncInputs('sipRange', 'amountSip')">
+                        <input type="number" id="amountSip" value="10000" oninput="syncInputs('amountSip', 'sipRange')">
+                    </div>
+                </div>
+                
+                <!-- STEP UP (Default 10) -->
+                <div class="input-group" id="grp-stepup">
+                    <label>Annual Step-Up (%)</label>
+                    <div class="input-row">
+                        <input type="range" id="stepUpRange" min="0" max="50" value="10" oninput="syncInputs('stepUpRange', 'stepUpInput')">
+                        <input type="number" id="stepUpInput" value="10" oninput="syncInputs('stepUpInput', 'stepUpRange')">
+                    </div>
+                </div>
+
+                <!-- TIME HORIZON (Default 20) -->
+                <div class="input-group">
+                    <label>Time Horizon (Years)</label>
+                    <div class="input-row">
+                        <input type="range" id="yearsRange" min="1" max="40" value="20" oninput="syncInputs('yearsRange', 'yearsInput')">
+                        <input type="number" id="yearsInput" value="20" oninput="syncInputs('yearsInput', 'yearsRange')">
+                    </div>
+                </div>
+
+                <!-- SETTINGS TOGGLE -->
+                <button class="settings-toggle" onclick="toggleSettings()">Edit Return Assumptions ⚙️</button>
+                
+                <div id="settingsArea" class="hidden">
+                    <div class="settings-grid">
+                        <div class="settings-item">
+                            <label>Small Cap %</label>
+                            <input type="number" id="r_small" value="15" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Mid Cap %</label>
+                            <input type="number" id="r_mid" value="14" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Flexi Cap %</label>
+                            <input type="number" id="r_flexi" value="13" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Large Cap %</label>
+                            <input type="number" id="r_large" value="12" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Bal. Adv (BAF) %</label>
+                            <input type="number" id="r_baf" value="10" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Hybrid Cons. %</label>
+                            <input type="number" id="r_hybrid_cons" value="8" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Debt %</label>
+                            <input type="number" id="r_debt" value="7" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Gold / Intl %</label>
+                            <input type="number" id="r_gold" value="9" oninput="generatePlan()">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div class="panel-right" id="resultsPanel">
+                
+                <div id="welcomeState" class="welcome-state">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">📊</div>
+                    <h3>Welcome</h3>
+                    <p>Adjust inputs to see live strategy.</p>
+                </div>
+
+                <div id="resultsContent" class="results-content">
+                    <div class="header-row">
+                        <div>
+                            <span id="strategyBadge" class="strategy-badge">Moderate</span>
+                            <h2 id="strategyTitle" class="strategy-title">Balanced Growth</h2>
+                        </div>
+                    </div>
+
+                    <div id="warningBox" class="warning-box">
+                        ⚠️ <strong>Short Duration:</strong> Shifted to safe funds for capital protection (< 3 years).
+                    </div>
+                    <div id="focusedBox" class="warning-box" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
+                        🎯 <strong>Focused Mode:</strong> Portfolio concentrated for efficient growth.
+                    </div>
+
+                    <div class="viz-container">
+                        <div class="donut-wrapper">
+                            <div class="donut-chart" id="donutChart">
+                                <div class="donut-hole">
+                                    <span class="donut-total-label">Input</span>
+                                    <span class="donut-total-val" id="donutCenter"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="allocation-list" id="allocList">
+                            <!-- Items injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Wealth Projector -->
+                    <div class="projection-card">
+                        <div class="proj-item">
+                            <small>Total Invested</small>
+                            <div id="valInvested">₹0</div>
+                        </div>
+                        <div class="proj-item highlight">
+                            <small>Est. Returns</small>
+                            <div id="valReturns">₹0</div>
+                        </div>
+                        <div class="proj-item">
+                            <small>Total Value</small>
+                            <div id="valTotal">₹0</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- LOGIC EDITOR (BOTTOM) -->
+        <div class="logic-container">
+            <div class="logic-header" onclick="document.getElementById('logicGrid').classList.toggle('hidden')">
+                <div class="logic-title">Strategy Logic Configuration ⚙️</div>
+                <div style="font-size:0.8rem; color:#64748b;">(Click to Expand/Collapse)</div>
+            </div>
+            
+            <div id="logicGrid" class="logic-grid hidden">
+                <!-- JS will inject cards here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- STICKY FOOTER FOR MOBILE -->
+    <div id="mobileSummary" class="mobile-sticky-bar" onclick="scrollToResults()">
+        <div>
+            <div class="ms-label">Projected Value</div>
+            <div class="ms-val" id="mobValTotal">₹0</div>
+        </div>
+        <div class="ms-icon">See Details ⬇</div>
+    </div>
+
+    <script>
+        // Constants for Return Rates (Defaults)
+        const DEFAULT_RATES = {
+            "small": 15, "mid": 14, "flexi": 13, "large": 12,
+            "baf": 10, "hybrid_cons": 8, "debt": 7, "gold": 9
+        };
+
+        // --- STRATEGY DATA STRUCTURE (The Core Logic) ---
+        // This object defines every allocation rule. Editing this via UI updates the tool.
+        let STRATEGY_CONFIG = {
+            shortTerm: {
+                id: "shortTerm", label: "Short Term (<3 Yrs)", 
+                type: "Conservative", name: "Capital Protection",
+                alloc: { debt: 70, hybrid_cons: 30 }
+            },
+            smallAmtYoung: {
+                id: "smallAmtYoung", label: "Small Amt (Age < 40)",
+                type: "High Growth", name: "Focused Aggressive",
+                alloc: { flexi: 50, mid: 50 }
+            },
+            smallAmtOld: {
+                id: "smallAmtOld", label: "Small Amt (Age > 40)",
+                type: "Moderate", name: "Focused Balanced",
+                alloc: { baf: 50, debt: 50 }
+            },
+            age0to10: {
+                id: "age0to10", label: "Age 0-10",
+                type: "Very Aggressive", name: "Child Future Builder",
+                alloc: { flexi: 50, mid: 30, small: 20 }
+            },
+            age10to20: {
+                id: "age10to20", label: "Age 10-20",
+                type: "High Growth", name: "Young Genius",
+                alloc: { flexi: 40, mid: 25, small: 25, gold: 10 }
+            },
+            age20to30: {
+                id: "age20to30", label: "Age 20-30",
+                type: "High Growth", name: "Early Career Aggressive",
+                alloc: { flexi: 40, mid: 20, small: 15, debt: 20, gold: 5 }
+            },
+            age30to40: {
+                id: "age30to40", label: "Age 30-40",
+                type: "Growth", name: "Family Wealth Builder",
+                alloc: { flexi: 40, large: 20, mid: 20, debt: 20 }
+            },
+            age40to50: {
+                id: "age40to50", label: "Age 40-50",
+                type: "Moderate", name: "Balanced Consolidation",
+                alloc: { flexi: 30, large: 20, baf: 20, mid: 10, debt: 20 }
+            },
+            age50to60: {
+                id: "age50to60", label: "Age 50-60",
+                type: "Conservative", name: "Pre-Retirement Safety",
+                alloc: { large: 20, baf: 40, hybrid_cons: 10, debt: 30 }
+            },
+            age60to70: {
+                id: "age60to70", label: "Age 60-70",
+                type: "Stable", name: "Golden Years Income",
+                alloc: { large: 10, baf: 40, debt: 50 }
+            },
+            age70plus: {
+                id: "age70plus", label: "Age 70+",
+                type: "Very Conservative", name: "Legacy & Protection",
+                alloc: { baf: 20, debt: 80 }
+            }
+        };
+
+        // Keys for Allocation Inputs
+        const ALLOC_KEYS = ['small', 'mid', 'flexi', 'large', 'baf', 'hybrid_cons', 'debt', 'gold'];
+
+        // --- UI INITIALIZATION ---
+        function initLogicEditor() {
+            const grid = document.getElementById('logicGrid');
+            grid.innerHTML = ''; // Clear
+
+            // Iterate through config and create cards
+            for (const key in STRATEGY_CONFIG) {
+                const strat = STRATEGY_CONFIG[key];
+                
+                let html = `
+                    <div class="logic-card" id="card-${strat.id}">
+                        <div class="logic-card-header">
+                            <span>${strat.label}</span>
+                            <span>${strat.type}</span>
+                        </div>
+                        <div style="font-size:0.8rem; margin-bottom:10px; color:#64748b;">${strat.name}</div>
+                `;
+
+                // Create inputs for each fund type if it exists or even if 0 (to allow adding)
+                // To save space, we only show standard ones, but let's show all available
+                ALLOC_KEYS.forEach(k => {
+                    const val = strat.alloc[k] || 0;
+                    // Capitalize label
+                    const label = k.charAt(0).toUpperCase() + k.slice(1);
+                    
+                    html += `
+                        <div class="alloc-input-row">
+                            <label>${label}</label>
+                            <input type="number" min="0" max="100" 
+                                value="${val}" 
+                                onchange="updateStrategy('${key}', '${k}', this.value)">
+                        </div>
+                    `;
+                });
+
+                html += `</div>`;
+                grid.innerHTML += html;
+            }
+        }
+
+        // Update Strategy Data from UI
+        function updateStrategy(stratKey, allocKey, value) {
+            const val = parseFloat(value) || 0;
+            STRATEGY_CONFIG[stratKey].alloc[allocKey] = val;
+            generatePlan(); // Re-calc immediately
+        }
+
+        function highlightActiveStrategy(activeId) {
+            // Remove active class from all
+            document.querySelectorAll('.logic-card').forEach(c => c.classList.remove('active-profile'));
+            // Add to current
+            const card = document.getElementById(`card-${activeId}`);
+            if(card) card.classList.add('active-profile');
+        }
+
+
+        // --- MAIN FUNCTIONS ---
+
+        function scrollToResults() {
+            document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function toggleSettings() {
+            const area = document.getElementById('settingsArea');
+            if(area.classList.contains('hidden')) {
+                area.classList.remove('hidden');
+            } else {
+                area.classList.add('hidden');
+            }
+        }
+
+        function getRates() {
+            return {
+                "small": parseFloat(document.getElementById('r_small').value) || DEFAULT_RATES.small,
+                "mid": parseFloat(document.getElementById('r_mid').value) || DEFAULT_RATES.mid,
+                "flexi": parseFloat(document.getElementById('r_flexi').value) || DEFAULT_RATES.flexi,
+                "large": parseFloat(document.getElementById('r_large').value) || DEFAULT_RATES.large,
+                "baf": parseFloat(document.getElementById('r_baf').value) || DEFAULT_RATES.baf,
+                "hybrid_cons": parseFloat(document.getElementById('r_hybrid_cons').value) || DEFAULT_RATES.hybrid_cons,
+                "debt": parseFloat(document.getElementById('r_debt').value) || DEFAULT_RATES.debt,
+                "gold": parseFloat(document.getElementById('r_gold').value) || DEFAULT_RATES.gold
+            };
+        }
+
+        function syncInputs(sourceId, targetId) {
+            const source = document.getElementById(sourceId);
+            const target = document.getElementById(targetId);
+            target.value = source.value;
+            generatePlan();
+        }
+
+        function toggleInputs() {
+            const mode = document.getElementById('invMode').value;
+            const grpLump = document.getElementById('grp-lumpsum');
+            const grpSip = document.getElementById('grp-sip');
+            const grpStep = document.getElementById('grp-stepup');
+
+            if (mode === 'lumpsum') {
+                grpLump.classList.remove('hidden'); 
+                grpSip.classList.add('hidden');
+                grpStep.classList.add('hidden');
+            } else if (mode === 'sip') {
+                grpLump.classList.add('hidden'); 
+                grpSip.classList.remove('hidden');
+                grpStep.classList.remove('hidden');
+            } else {
+                grpLump.classList.remove('hidden'); 
+                grpSip.classList.remove('hidden');
+                grpStep.classList.remove('hidden');
+            }
+            generatePlan();
+        }
+
+        function generatePlan() {
+            const age = parseInt(document.getElementById('ageInput').value);
+            const years = parseInt(document.getElementById('yearsInput').value);
+            const mode = document.getElementById('invMode').value;
+            const stepUp = parseFloat(document.getElementById('stepUpInput').value) || 0;
+            
+            let lumpAmt = (mode === 'lumpsum' || mode === 'both') ? parseFloat(document.getElementById('amountLumpsum').value) || 0 : 0;
+            let sipAmt = (mode === 'sip' || mode === 'both') ? parseFloat(document.getElementById('amountSip').value) || 0 : 0;
+
+            const currentRates = getRates();
+
+            // --- SELECTION LOGIC ---
+            // Finds the correct configuration object from STRATEGY_CONFIG
+            
+            let selectedConfig = null;
+            let warningShort = false;
+            let isSmall = false;
+
+            // 1. Short Term Override
+            if (years < 3) {
+                selectedConfig = STRATEGY_CONFIG.shortTerm;
+                warningShort = true;
+            } 
+            else {
+                // 2. Focused Mode (Small Amount)
+                if (mode === 'lumpsum' && lumpAmt < 10000 && lumpAmt > 0) isSmall = true;
+                if (mode === 'sip' && sipAmt < 10000 && sipAmt > 0) isSmall = true;
+                if (mode === 'both' && lumpAmt < 10000 && sipAmt < 10000 && (lumpAmt > 0 || sipAmt > 0)) isSmall = true;
+
+                if (isSmall) {
+                    if (age <= 40) selectedConfig = STRATEGY_CONFIG.smallAmtYoung;
+                    else selectedConfig = STRATEGY_CONFIG.smallAmtOld;
+                } 
+                else {
+                    // 3. Standard Age Buckets
+                    if (age <= 10) selectedConfig = STRATEGY_CONFIG.age0to10;
+                    else if (age <= 20) selectedConfig = STRATEGY_CONFIG.age10to20;
+                    else if (age <= 30) selectedConfig = STRATEGY_CONFIG.age20to30;
+                    else if (age <= 40) selectedConfig = STRATEGY_CONFIG.age30to40;
+                    else if (age <= 50) selectedConfig = STRATEGY_CONFIG.age40to50;
+                    else if (age <= 60) selectedConfig = STRATEGY_CONFIG.age50to60;
+                    else if (age <= 70) selectedConfig = STRATEGY_CONFIG.age60to70;
+                    else selectedConfig = STRATEGY_CONFIG.age70plus;
+                }
+            }
+
+            // Highlight in Bottom Grid
+            if (selectedConfig) highlightActiveStrategy(selectedConfig.id);
+
+            // --- BUILD PORTFOLIO ARRAY ---
+            let portfolio = [];
+            // Map the config alloc object (e.g., {flexi: 50, mid: 30}) to the portfolio array format
+            // keys: small, mid, flexi, large, baf, hybrid_cons, debt, gold
+            
+            const mappingNames = {
+                "small": "Small Cap Fund",
+                "mid": "Mid Cap Fund",
+                "flexi": "Flexi Cap Fund",
+                "large": "Large Cap Fund",
+                "baf": "Balanced Advantage",
+                "hybrid_cons": "Hybrid Conservative",
+                "debt": "Debt Fund",
+                "gold": "Gold / Intl"
+            };
+
+            const mappingColors = {
+                "small": "var(--c-small)", "mid": "var(--c-mid)", 
+                "flexi": "var(--c-core)", "large": "var(--c-core)",
+                "baf": "var(--c-hybrid)", "hybrid_cons": "var(--c-hybrid)", "gold": "var(--c-hybrid)",
+                "debt": "var(--c-debt)"
+            };
+
+            const mappingClasses = {
+                "small": "c-small", "mid": "c-mid", "flexi": "c-core", "large": "c-core",
+                "baf": "c-hybrid", "hybrid_cons": "c-hybrid", "gold": "c-hybrid",
+                "debt": "c-debt"
+            };
+
+            for (const key in selectedConfig.alloc) {
+                const pct = selectedConfig.alloc[key];
+                if (pct > 0) {
+                    portfolio.push({
+                        name: mappingNames[key],
+                        pct: pct / 100,
+                        color: mappingColors[key],
+                        class: mappingClasses[key],
+                        rate: currentRates[key]
+                    });
+                }
+            }
+
+            // --- UPDATE UI ---
+            document.getElementById('welcomeState').style.display = 'none';
+            document.getElementById('resultsContent').style.display = 'block';
+            document.body.classList.add('results-active');
+            
+            document.getElementById('strategyTitle').innerText = selectedConfig.name;
+            document.getElementById('strategyBadge').innerText = selectedConfig.type;
+            
+            document.getElementById('warningBox').style.display = warningShort ? 'block' : 'none';
+            document.getElementById('focusedBox').style.display = (isSmall && !warningShort) ? 'block' : 'none';
+
+            // Donut Center
+            const donutCenter = document.getElementById('donutCenter');
+            if (mode === 'lumpsum') donutCenter.innerText = formatMoney(lumpAmt);
+            else if (mode === 'sip') donutCenter.innerText = formatMoney(sipAmt) + "/mo";
+            else donutCenter.innerHTML = "Mix";
+
+            // Render List
+            const listContainer = document.getElementById('allocList');
+            listContainer.innerHTML = '';
+            
+            let weightedRate = 0;
+
+            portfolio.forEach(item => {
+                weightedRate += (item.pct * item.rate);
+                
+                const percent = Math.round(item.pct * 100);
+                let displayAmt = "";
+                
+                if (mode === 'lumpsum') displayAmt = "₹" + (Math.round(item.pct * lumpAmt)).toLocaleString('en-IN');
+                else if (mode === 'sip') displayAmt = "₹" + (Math.round(item.pct * sipAmt)).toLocaleString('en-IN') + "/mo";
+                else displayAmt = `${percent}% Alloc`;
+
+                listContainer.innerHTML += `
+                    <div class="alloc-item">
+                        <div class="color-dot ${item.class}"></div>
+                        <div class="alloc-info">
+                            <span class="alloc-name">
+                                ${item.name} 
+                                <span style="font-weight:400; font-size:0.8em; color:var(--text-sub); margin-left:4px;">(~${item.rate}%)</span>
+                            </span>
+                            <span class="alloc-amt">${displayAmt}</span>
+                        </div>
+                        <span class="alloc-pct">${percent}%</span>
+                    </div>
+                `;
+            });
+
+            // Update Chart
+            drawDonut(portfolio);
+
+            // Projections
+            calculateReturns(lumpAmt, sipAmt, years, weightedRate, stepUp);
+        }
+
+        function drawDonut(portfolio) {
+            const chart = document.getElementById('donutChart');
+            let currentAngle = 0;
+            let gradStr = "";
+            
+            portfolio.forEach(p => {
+                const deg = p.pct * 360;
+                const endAngle = currentAngle + deg;
+                gradStr += `${p.color} ${currentAngle}deg ${endAngle}deg, `;
+                currentAngle = endAngle;
+            });
+            
+            // Handle edge case of 0% or empty
+            if (gradStr === "") gradStr = "#eee 0deg 360deg";
+            else gradStr = gradStr.slice(0, -2);
+            
+            chart.style.background = `conic-gradient(${gradStr})`;
+        }
+
+        function calculateReturns(lump, sip, years, rate, stepUp) {
+            const annualRate = rate / 100;
+            const monthlyRate = annualRate / 12;
+            const totalMonths = years * 12;
+
+            let fvLump = 0;
+            if (lump > 0) {
+                fvLump = lump * Math.pow((1 + annualRate), years);
+            }
+
+            let fvSip = 0;
+            let totalSipInvested = 0;
+            let currentSipAmount = sip;
+
+            if (sip > 0) {
+                for (let m = 1; m <= totalMonths; m++) {
+                    fvSip += currentSipAmount;
+                    totalSipInvested += currentSipAmount;
+                    fvSip = fvSip * (1 + monthlyRate);
+                    
+                    if (m % 12 === 0 && stepUp > 0) {
+                        currentSipAmount = currentSipAmount * (1 + (stepUp / 100));
+                    }
+                }
+            }
+
+            const totalInvested = lump + totalSipInvested;
+            const totalValue = fvLump + fvSip;
+            const totalProfit = totalValue - totalInvested;
+
+            const fmtTotal = formatMoney(totalValue);
+            
+            document.getElementById('valInvested').innerText = formatMoney(totalInvested);
+            document.getElementById('valReturns').innerText = "+" + formatMoney(totalProfit);
+            document.getElementById('valTotal').innerText = fmtTotal;
+            document.getElementById('mobValTotal').innerText = fmtTotal;
+        }
+
+        function formatMoney(n) {
+            if (n < 1000) return "₹" + Math.round(n);
+            if (n >= 1000 && n < 100000) return "₹" + (n/1000).toFixed(1) + "k";
+            if (n >= 100000 && n < 10000000) return "₹" + (n/100000).toFixed(2) + "L";
+            return "₹" + (n/10000000).toFixed(2) + "Cr";
+        }
+    </script>
+</body>
+</html>
