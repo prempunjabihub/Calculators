@@ -385,6 +385,38 @@
             .proj-item:last-child { border: none; margin: 0; padding: 0; }
         }
 
+        /* SPLIT BAR (NEW) */
+        .split-bar-container {
+            margin-top: 20px;
+        }
+        .split-bar {
+            display: flex;
+            height: 14px;
+            width: 100%;
+            background: #e2e8f0;
+            border-radius: 7px;
+            overflow: hidden;
+        }
+        .sb-segment {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+        .sb-invested { background-color: var(--accent); } /* Bright Blue for Invested */
+        .sb-returns { background-color: #4ade80; } /* Light Green for Returns */
+        
+        .sb-legend {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .dot-invested { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        .dot-returns { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
+
+
         /* MOBILE STICKY SUMMARY BAR */
         .mobile-sticky-bar {
             display: none;
@@ -645,6 +677,19 @@
                             <div id="valTotal">₹0</div>
                         </div>
                     </div>
+
+                    <!-- NEW: Split Bar -->
+                    <div class="split-bar-container">
+                        <div class="split-bar">
+                            <div id="barInvested" class="sb-segment sb-invested"></div>
+                            <div id="barReturns" class="sb-segment sb-returns"></div>
+                        </div>
+                        <div class="sb-legend">
+                            <span class="legend-item"><span class="dot-invested"></span>Principal</span>
+                            <span class="legend-item"><span class="dot-returns"></span>Profit</span>
+                        </div>
+                    </div>
+
                 </div>
 
             </div>
@@ -1056,6 +1101,13 @@
             document.getElementById('valReturns').innerText = "+" + formatMoney(totalProfit);
             document.getElementById('valTotal').innerText = fmtTotal;
             document.getElementById('mobValTotal').innerText = fmtTotal;
+            
+            // Update Split Bar Widths
+            const pctInvested = totalValue > 0 ? (totalInvested / totalValue) * 100 : 0;
+            const pctReturns = totalValue > 0 ? (totalProfit / totalValue) * 100 : 0;
+            
+            document.getElementById('barInvested').style.width = pctInvested + "%";
+            document.getElementById('barReturns').style.width = pctReturns + "%";
         }
 
         function formatMoney(n) {
