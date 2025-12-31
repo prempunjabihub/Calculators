@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wealth Dashboard</title>
+    <title>Persevia SIP Calculator</title>
     <style>
         :root {
             --primary: #0f172a; /* Midnight Blue */
@@ -29,19 +29,27 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Changed to start to allow scrolling */
             padding: 20px;
             box-sizing: border-box;
+            padding-bottom: 100px; /* Space for footer */
         }
 
         /* Main Dashboard Container */
+        .dashboard-wrapper {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
         .dashboard {
             display: grid;
             grid-template-columns: 1fr;
             gap: 0;
             background: var(--card-bg);
             width: 100%;
-            max-width: 1200px;
             border-radius: 24px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             overflow: hidden;
@@ -59,9 +67,8 @@
         /* MOBILE & TABLET PORTRAIT (< 900px) */
         @media (max-width: 899px) {
             body {
-                padding: 10px; /* Less padding on mobile body */
-                align-items: flex-start; /* Start from top to prevent clipping */
-                padding-bottom: 80px; /* Space for sticky footer */
+                padding: 10px;
+                padding-bottom: 80px;
             }
             .dashboard {
                 display: flex;
@@ -69,11 +76,11 @@
                 border-radius: 16px;
             }
             .panel-left {
-                padding: 25px 20px !important; /* Tighter padding */
+                padding: 25px 20px !important;
             }
             .panel-right {
                 padding: 25px 20px !important;
-                background: #f8fafc; /* Slight contrast for lower section */
+                background: #f8fafc;
             }
             .header-row {
                 flex-direction: column;
@@ -91,8 +98,6 @@
                 width: 110px !important;
                 height: 110px !important;
             }
-            /* Hide the large welcome icon on mobile to save space */
-            .welcome-state div { font-size: 2rem !important; }
         }
 
         /* LEFT PANEL: Inputs */
@@ -109,9 +114,9 @@
             margin-bottom: 30px;
             flex-shrink: 0;
         }
-        .brand div { font-size: 1.4rem; font-weight: 700; line-height: 1.2; }
+        .brand div { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
         .brand span { color: var(--accent); }
-        .brand small { font-size: 0.8rem; font-weight: 400; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase;}
+        /* Subtitle removed as requested */
 
         .input-group { margin-bottom: 25px; transition: all 0.3s ease; }
 
@@ -159,7 +164,8 @@
             outline: none;
         }
 
-        .hidden { display: none; }
+        /* Utility Class - Fixed with !important */
+        .hidden { display: none !important; }
 
         /* Range Slider */
         input[type="range"] {
@@ -174,7 +180,7 @@
         
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 20px; /* Larger for touch */
+            height: 20px;
             width: 20px;
             border-radius: 50%;
             background: var(--accent);
@@ -191,7 +197,7 @@
             border-radius: 2px;
         }
 
-        /* Settings Area */
+        /* Settings Area (Returns) */
         .settings-toggle {
             background: none;
             border: none;
@@ -368,7 +374,10 @@
 
         .proj-item small { display: block; opacity: 0.7; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
         .proj-item div { font-size: 1.1rem; font-weight: 700; }
-        .proj-item.highlight div { color: var(--c-debt); font-size: 1.3rem; }
+        
+        /* Updated Colors per user request */
+        .proj-item.highlight div { color: #4ade80; font-size: 1.3rem; } /* Light Green */
+        #valTotal { color: #22c55e; } /* Green */
         
         @media (max-width: 600px) {
             .projection-card { grid-template-columns: 1fr; text-align: left; }
@@ -400,6 +409,75 @@
         .ms-val { font-size: 1.2rem; font-weight: 700; color: var(--c-debt); }
         .ms-icon { font-size: 0.9rem; background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 15px; }
 
+        /* ADVANCED LOGIC EDITOR (BOTTOM) */
+        .logic-container {
+            width: 100%;
+            background: #e2e8f0; /* Light Grey as requested */
+            border-radius: 16px;
+            padding: 25px;
+            box-sizing: border-box;
+            color: var(--text-main);
+        }
+
+        .logic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .logic-title { font-weight: 700; color: #475569; font-size: 1.1rem; }
+        
+        .logic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .logic-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+        }
+        
+        .logic-card-header {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .logic-card.active-profile {
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+        }
+        
+        .logic-card.active-profile .logic-card-header { color: var(--accent); }
+
+        .alloc-input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+        }
+        
+        .alloc-input-row label { margin: 0; color: #64748b; font-weight: 400; }
+        .alloc-input-row input {
+            width: 50px;
+            padding: 4px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            text-align: center;
+            color: var(--text-main);
+            background: #f8fafc;
+        }
 
         /* Colors for JS */
         .c-core { background-color: var(--c-core); }
@@ -410,481 +488,96 @@
 
     </style>
 </head>
-<body onload="toggleInputs(); generatePlan();">
+<body onload="initLogicEditor(); toggleInputs(); generatePlan();">
 
-    <div class="dashboard">
-        <!-- LEFT PANEL -->
-        <div class="panel-left">
-            <div class="brand">
-                <div>Persevia <span>FinSolutions</span></div>
-                <small>Wealth Management</small>
-            </div>
-
-            <div class="input-group">
-                <label>Investment Mode</label>
-                <select id="invMode" onchange="toggleInputs();">
-                    <option value="lumpsum">Lumpsum Only</option>
-                    <option value="sip" selected>SIP Only</option>
-                    <option value="both">Both (Lumpsum + SIP)</option>
-                </select>
-            </div>
-
-            <!-- AGE -->
-            <div class="input-group">
-                <label>Client Age</label>
-                <div class="input-row">
-                    <input type="range" id="ageRange" min="1" max="90" value="30" oninput="syncInputs('ageRange', 'ageInput')">
-                    <input type="number" id="ageInput" value="30" oninput="syncInputs('ageInput', 'ageRange')">
+    <div class="dashboard-wrapper">
+        <div class="dashboard">
+            <!-- LEFT PANEL -->
+            <div class="panel-left">
+                <div class="brand">
+                    <div>Persevia <span>FinSolutions</span></div>
                 </div>
-            </div>
 
-            <!-- LUMPSUM -->
-            <div class="input-group" id="grp-lumpsum">
-                <label>Lumpsum Amount (₹)</label>
-                <input type="number" id="amountLumpsum" placeholder="e.g. 500000" value="0" oninput="generatePlan()">
-            </div>
-
-            <!-- SIP -->
-            <div class="input-group" id="grp-sip">
-                <label>Monthly SIP (₹)</label>
-                <div class="input-row">
-                    <input type="range" id="sipRange" min="500" max="100000" step="500" value="5000" oninput="syncInputs('sipRange', 'amountSip')">
-                    <input type="number" id="amountSip" value="5000" oninput="syncInputs('amountSip', 'sipRange')">
+                <div class="input-group">
+                    <label>Investment Mode</label>
+                    <select id="invMode" onchange="toggleInputs();">
+                        <option value="lumpsum">Lumpsum Only</option>
+                        <option value="sip" selected>SIP Only</option>
+                        <option value="both">Both (Lumpsum + SIP)</option>
+                    </select>
                 </div>
-            </div>
-            
-            <!-- STEP UP -->
-            <div class="input-group" id="grp-stepup">
-                <label>Annual Step-Up (%)</label>
-                <div class="input-row">
-                    <input type="range" id="stepUpRange" min="0" max="50" value="0" oninput="syncInputs('stepUpRange', 'stepUpInput')">
-                    <input type="number" id="stepUpInput" value="0" oninput="syncInputs('stepUpInput', 'stepUpRange')">
-                </div>
-            </div>
 
-            <!-- TIME HORIZON -->
-            <div class="input-group">
-                <label>Time Horizon (Years)</label>
-                <div class="input-row">
-                    <input type="range" id="yearsRange" min="1" max="40" value="10" oninput="syncInputs('yearsRange', 'yearsInput')">
-                    <input type="number" id="yearsInput" value="10" oninput="syncInputs('yearsInput', 'yearsRange')">
-                </div>
-            </div>
-
-            <!-- SETTINGS TOGGLE -->
-            <button class="settings-toggle" onclick="toggleSettings()">Edit Return Assumptions ⚙️</button>
-            
-            <div id="settingsArea" class="hidden">
-                <div class="settings-grid">
-                    <div class="settings-item">
-                        <label>Small Cap %</label>
-                        <input type="number" id="r_small" value="15" oninput="generatePlan()">
-                    </div>
-                    <div class="settings-item">
-                        <label>Mid Cap %</label>
-                        <input type="number" id="r_mid" value="14" oninput="generatePlan()">
-                    </div>
-                    <div class="settings-item">
-                        <label>Flexi Cap %</label>
-                        <input type="number" id="r_flexi" value="13" oninput="generatePlan()">
-                    </div>
-                    <div class="settings-item">
-                        <label>Large Cap %</label>
-                        <input type="number" id="r_large" value="12" oninput="generatePlan()">
-                    </div>
-                    <div class="settings-item">
-                        <label>Bal. Adv (BAF) %</label>
-                        <input type="number" id="r_baf" value="10" oninput="generatePlan()">
-                    </div>
-                    <div class="settings-item">
-                        <label>Hybrid Cons. %</label>
-                        <input type="number" id="r_hybrid_cons" value="8" oninput="generatePlan()">
-                    </div>
-                    <div class="settings-item">
-                        <label>Debt %</label>
-                        <input type="number" id="r_debt" value="7" oninput="generatePlan()">
-                    </div>
-                    <div class="settings-item">
-                        <label>Gold / Intl %</label>
-                        <input type="number" id="r_gold" value="9" oninput="generatePlan()">
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- RIGHT PANEL -->
-        <div class="panel-right" id="resultsPanel">
-            
-            <div id="welcomeState" class="welcome-state">
-                <div style="font-size: 3rem; margin-bottom: 10px;">📊</div>
-                <h3>Welcome</h3>
-                <p>Adjust inputs to see live strategy.</p>
-            </div>
-
-            <div id="resultsContent" class="results-content">
-                <div class="header-row">
-                    <div>
-                        <span id="strategyBadge" class="strategy-badge">Moderate</span>
-                        <h2 id="strategyTitle" class="strategy-title">Balanced Growth</h2>
+                <!-- AGE (Default 25) -->
+                <div class="input-group">
+                    <label>Client Age</label>
+                    <div class="input-row">
+                        <input type="range" id="ageRange" min="1" max="90" value="25" oninput="syncInputs('ageRange', 'ageInput')">
+                        <input type="number" id="ageInput" value="25" oninput="syncInputs('ageInput', 'ageRange')">
                     </div>
                 </div>
 
-                <div id="warningBox" class="warning-box">
-                    ⚠️ <strong>Short Duration:</strong> Shifted to safe funds for capital protection (< 3 years).
-                </div>
-                <div id="focusedBox" class="warning-box" style="background: #eff6ff; border-color: #bfdbfe; color: #1e40af;">
-                    🎯 <strong>Focused Mode:</strong> Portfolio concentrated for efficient growth.
+                <!-- LUMPSUM -->
+                <div class="input-group" id="grp-lumpsum">
+                    <label>Lumpsum Amount (₹)</label>
+                    <input type="number" id="amountLumpsum" placeholder="e.g. 500000" value="0" oninput="generatePlan()">
                 </div>
 
-                <div class="viz-container">
-                    <div class="donut-wrapper">
-                        <div class="donut-chart" id="donutChart">
-                            <div class="donut-hole">
-                                <span class="donut-total-label">Input</span>
-                                <span class="donut-total-val" id="donutCenter"></span>
-                            </div>
+                <!-- SIP (Default 10000) -->
+                <div class="input-group" id="grp-sip">
+                    <label>Monthly SIP (₹)</label>
+                    <div class="input-row">
+                        <input type="range" id="sipRange" min="500" max="100000" step="500" value="10000" oninput="syncInputs('sipRange', 'amountSip')">
+                        <input type="number" id="amountSip" value="10000" oninput="syncInputs('amountSip', 'sipRange')">
+                    </div>
+                </div>
+                
+                <!-- STEP UP (Default 10) -->
+                <div class="input-group" id="grp-stepup">
+                    <label>Annual Step-Up (%)</label>
+                    <div class="input-row">
+                        <input type="range" id="stepUpRange" min="0" max="50" value="10" oninput="syncInputs('stepUpRange', 'stepUpInput')">
+                        <input type="number" id="stepUpInput" value="10" oninput="syncInputs('stepUpInput', 'stepUpRange')">
+                    </div>
+                </div>
+
+                <!-- TIME HORIZON (Default 20) -->
+                <div class="input-group">
+                    <label>Time Horizon (Years)</label>
+                    <div class="input-row">
+                        <input type="range" id="yearsRange" min="1" max="40" value="20" oninput="syncInputs('yearsRange', 'yearsInput')">
+                        <input type="number" id="yearsInput" value="20" oninput="syncInputs('yearsInput', 'yearsRange')">
+                    </div>
+                </div>
+
+                <!-- SETTINGS TOGGLE -->
+                <button class="settings-toggle" onclick="toggleSettings()">Edit Return Assumptions ⚙️</button>
+                
+                <div id="settingsArea" class="hidden">
+                    <div class="settings-grid">
+                        <div class="settings-item">
+                            <label>Small Cap %</label>
+                            <input type="number" id="r_small" value="15" oninput="generatePlan()">
                         </div>
-                    </div>
-
-                    <div class="allocation-list" id="allocList">
-                        <!-- Items injected here -->
-                    </div>
-                </div>
-
-                <!-- Wealth Projector -->
-                <div class="projection-card">
-                    <div class="proj-item">
-                        <small>Total Invested</small>
-                        <div id="valInvested">₹0</div>
-                    </div>
-                    <div class="proj-item highlight">
-                        <small>Est. Returns</small>
-                        <div id="valReturns">₹0</div>
-                    </div>
-                    <div class="proj-item">
-                        <small>Total Value</small>
-                        <div id="valTotal">₹0</div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-    </div>
-
-    <!-- STICKY FOOTER FOR MOBILE -->
-    <div id="mobileSummary" class="mobile-sticky-bar" onclick="scrollToResults()">
-        <div>
-            <div class="ms-label">Projected Value</div>
-            <div class="ms-val" id="mobValTotal">₹0</div>
-        </div>
-        <div class="ms-icon">See Details ⬇</div>
-    </div>
-
-    <script>
-        // Constants for Return Rates (Defaults)
-        const DEFAULT_RATES = {
-            "small": 15, "mid": 14, "flexi": 13, "large": 12,
-            "baf": 10, "hybrid_cons": 8, "debt": 7, "gold": 9
-        };
-
-        // Scroll Helper for Mobile
-        function scrollToResults() {
-            document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Toggle Settings Visibility
-        function toggleSettings() {
-            const area = document.getElementById('settingsArea');
-            if(area.classList.contains('hidden')) {
-                area.classList.remove('hidden');
-            } else {
-                area.classList.add('hidden');
-            }
-        }
-
-        // Get Rates from Inputs (or default if empty)
-        function getRates() {
-            return {
-                "small": parseFloat(document.getElementById('r_small').value) || DEFAULT_RATES.small,
-                "mid": parseFloat(document.getElementById('r_mid').value) || DEFAULT_RATES.mid,
-                "flexi": parseFloat(document.getElementById('r_flexi').value) || DEFAULT_RATES.flexi,
-                "large": parseFloat(document.getElementById('r_large').value) || DEFAULT_RATES.large,
-                "baf": parseFloat(document.getElementById('r_baf').value) || DEFAULT_RATES.baf,
-                "hybrid_cons": parseFloat(document.getElementById('r_hybrid_cons').value) || DEFAULT_RATES.hybrid_cons,
-                "debt": parseFloat(document.getElementById('r_debt').value) || DEFAULT_RATES.debt,
-                "gold": parseFloat(document.getElementById('r_gold').value) || DEFAULT_RATES.gold
-            };
-        }
-
-        // Sync Slider and Textbox
-        function syncInputs(sourceId, targetId) {
-            const source = document.getElementById(sourceId);
-            const target = document.getElementById(targetId);
-            target.value = source.value;
-            generatePlan();
-        }
-
-        function toggleInputs() {
-            const mode = document.getElementById('invMode').value;
-            const grpLump = document.getElementById('grp-lumpsum');
-            const grpSip = document.getElementById('grp-sip');
-            const grpStep = document.getElementById('grp-stepup');
-
-            if (mode === 'lumpsum') {
-                grpLump.classList.remove('hidden'); 
-                grpSip.classList.add('hidden');
-                grpStep.classList.add('hidden');
-            } else if (mode === 'sip') {
-                grpLump.classList.add('hidden'); 
-                grpSip.classList.remove('hidden');
-                grpStep.classList.remove('hidden');
-            } else {
-                grpLump.classList.remove('hidden'); 
-                grpSip.classList.remove('hidden');
-                grpStep.classList.remove('hidden');
-            }
-            // Trigger calculation when mode changes
-            generatePlan();
-        }
-
-        function generatePlan() {
-            // Read inputs (from textboxes as primary source)
-            const age = parseInt(document.getElementById('ageInput').value);
-            const years = parseInt(document.getElementById('yearsInput').value);
-            const mode = document.getElementById('invMode').value;
-            const stepUp = parseFloat(document.getElementById('stepUpInput').value) || 0;
-            
-            let lumpAmt = (mode === 'lumpsum' || mode === 'both') ? parseFloat(document.getElementById('amountLumpsum').value) || 0 : 0;
-            let sipAmt = (mode === 'sip' || mode === 'both') ? parseFloat(document.getElementById('amountSip').value) || 0 : 0;
-
-            // Get Current Rates from Settings
-            const currentRates = getRates();
-
-            if (!age || (lumpAmt <= 0 && sipAmt <= 0)) { 
-                // Keep UI roughly as is or reset
-            }
-
-            // 1. Determine Logic
-            let portfolio = [];
-            let strategyName = "Custom";
-            let strategyType = "Balanced";
-            let warningShort = years < 3;
-            
-            // Check for Small Amount (Focused Mode)
-            let isSmall = false;
-            if (mode === 'lumpsum' && lumpAmt < 10000 && lumpAmt > 0) isSmall = true;
-            if (mode === 'sip' && sipAmt < 10000 && sipAmt > 0) isSmall = true;
-            if (mode === 'both' && lumpAmt < 10000 && sipAmt < 10000 && (lumpAmt > 0 || sipAmt > 0)) isSmall = true;
-
-            // --- ALLOCATION ENGINE ---
-            if (years < 3) {
-                strategyName = "Capital Protection";
-                strategyType = "Conservative";
-                portfolio = [
-                    { name: "Liquid / Ultra Short", pct: 0.70, color: "var(--c-debt)", class: "c-debt", rate: currentRates.debt },
-                    { name: "Conservative Hybrid", pct: 0.30, color: "var(--c-hybrid)", class: "c-hybrid", rate: currentRates.hybrid_cons }
-                ];
-            } else {
-                if (age <= 10) {
-                    strategyName = "Child Future Builder"; strategyType = "Very Aggressive";
-                    portfolio = [
-                        { name: "Flexi Cap Fund", pct: 0.50, color: "var(--c-core)", class: "c-core", rate: currentRates.flexi },
-                        { name: "Mid Cap Fund", pct: 0.30, color: "var(--c-mid)", class: "c-mid", rate: currentRates.mid },
-                        { name: "Small Cap Fund", pct: 0.20, color: "var(--c-small)", class: "c-small", rate: currentRates.small }
-                    ];
-                } else if (age <= 20) {
-                    strategyName = "Young Genius"; strategyType = "High Growth";
-                    portfolio = [
-                        { name: "Flexi Cap Fund", pct: 0.40, color: "var(--c-core)", class: "c-core", rate: currentRates.flexi },
-                        { name: "Mid Cap Fund", pct: 0.25, color: "var(--c-mid)", class: "c-mid", rate: currentRates.mid },
-                        { name: "Small Cap Fund", pct: 0.25, color: "var(--c-small)", class: "c-small", rate: currentRates.small },
-                        { name: "Gold / Intl", pct: 0.10, color: "var(--c-hybrid)", class: "c-hybrid", rate: currentRates.gold }
-                    ];
-                } else if (age <= 30) {
-                    strategyName = "Early Career Aggressive"; strategyType = "High Growth";
-                    portfolio = [
-                        { name: "Flexi Cap Fund", pct: 0.40, color: "var(--c-core)", class: "c-core", rate: currentRates.flexi },
-                        { name: "Mid Cap Fund", pct: 0.20, color: "var(--c-mid)", class: "c-mid", rate: currentRates.mid },
-                        { name: "Small Cap Fund", pct: 0.15, color: "var(--c-small)", class: "c-small", rate: currentRates.small },
-                        { name: "Debt Fund", pct: 0.20, color: "var(--c-debt)", class: "c-debt", rate: currentRates.debt },
-                        { name: "Gold", pct: 0.05, color: "var(--c-hybrid)", class: "c-hybrid", rate: currentRates.gold }
-                    ];
-                } else if (age <= 40) {
-                    strategyName = "Family Wealth Builder"; strategyType = "Growth";
-                    portfolio = [
-                        { name: "Flexi Cap Fund", pct: 0.40, color: "var(--c-core)", class: "c-core", rate: currentRates.flexi },
-                        { name: "Large Cap Fund", pct: 0.20, color: "var(--c-core)", class: "c-core", rate: currentRates.large },
-                        { name: "Mid Cap Fund", pct: 0.20, color: "var(--c-mid)", class: "c-mid", rate: currentRates.mid },
-                        { name: "Debt Fund", pct: 0.20, color: "var(--c-debt)", class: "c-debt", rate: currentRates.debt }
-                    ];
-                } else if (age <= 50) {
-                    strategyName = "Balanced Consolidation"; strategyType = "Moderate";
-                    portfolio = [
-                        { name: "Flexi Cap Fund", pct: 0.30, color: "var(--c-core)", class: "c-core", rate: currentRates.flexi },
-                        { name: "Large Cap Fund", pct: 0.20, color: "var(--c-core)", class: "c-core", rate: currentRates.large },
-                        { name: "Balanced Advantage", pct: 0.20, color: "var(--c-hybrid)", class: "c-hybrid", rate: currentRates.baf },
-                        { name: "Mid Cap Fund", pct: 0.10, color: "var(--c-mid)", class: "c-mid", rate: currentRates.mid },
-                        { name: "Debt Fund", pct: 0.20, color: "var(--c-debt)", class: "c-debt", rate: currentRates.debt }
-                    ];
-                } else if (age <= 60) {
-                    strategyName = "Pre-Retirement Safety"; strategyType = "Conservative";
-                    portfolio = [
-                        { name: "Large Cap Fund", pct: 0.20, color: "var(--c-core)", class: "c-core", rate: currentRates.large },
-                        { name: "Balanced Advantage", pct: 0.40, color: "var(--c-hybrid)", class: "c-hybrid", rate: currentRates.baf },
-                        { name: "Hybrid Conservative", pct: 0.10, color: "var(--c-hybrid)", class: "c-hybrid", rate: currentRates.hybrid_cons },
-                        { name: "Debt Fund", pct: 0.30, color: "var(--c-debt)", class: "c-debt", rate: currentRates.debt }
-                    ];
-                } else if (age <= 70) {
-                    strategyName = "Golden Years Income"; strategyType = "Stable";
-                    portfolio = [
-                        { name: "Large Cap Fund", pct: 0.10, color: "var(--c-core)", class: "c-core", rate: currentRates.large },
-                        { name: "Balanced Advantage", pct: 0.40, color: "var(--c-hybrid)", class: "c-hybrid", rate: currentRates.baf },
-                        { name: "Debt Fund", pct: 0.50, color: "var(--c-debt)", class: "c-debt", rate: currentRates.debt }
-                    ];
-                } else {
-                    strategyName = "Legacy & Protection"; strategyType = "Very Conservative";
-                    portfolio = [
-                        { name: "Balanced Advantage", pct: 0.20, color: "var(--c-hybrid)", class: "c-hybrid", rate: currentRates.baf },
-                        { name: "Debt / Liquid", pct: 0.80, color: "var(--c-debt)", class: "c-debt", rate: currentRates.debt }
-                    ];
-                }
-                
-                if (isSmall) {
-                    if (age <= 40) {
-                        portfolio = [
-                            { name: "Flexi Cap Fund", pct: 0.50, color: "var(--c-core)", class: "c-core", rate: currentRates.flexi },
-                            { name: "Mid Cap Fund", pct: 0.50, color: "var(--c-mid)", class: "c-mid", rate: currentRates.mid }
-                        ];
-                    } else {
-                        portfolio = [
-                            { name: "Balanced Advantage", pct: 0.50, color: "var(--c-hybrid)", class: "c-hybrid", rate: currentRates.baf },
-                            { name: "Debt Fund", pct: 0.50, color: "var(--c-debt)", class: "c-debt", rate: currentRates.debt }
-                        ];
-                    }
-                }
-            }
-
-            // 2. Update UI
-            document.getElementById('welcomeState').style.display = 'none';
-            document.getElementById('resultsContent').style.display = 'block';
-            document.body.classList.add('results-active'); // To show sticky footer
-            
-            document.getElementById('strategyTitle').innerText = strategyName;
-            document.getElementById('strategyBadge').innerText = strategyType;
-            document.getElementById('warningBox').style.display = warningShort ? 'block' : 'none';
-            document.getElementById('focusedBox').style.display = (isSmall && !warningShort) ? 'block' : 'none';
-
-            // Donut Center
-            const donutCenter = document.getElementById('donutCenter');
-            if (mode === 'lumpsum') donutCenter.innerText = formatMoney(lumpAmt);
-            else if (mode === 'sip') donutCenter.innerText = formatMoney(sipAmt) + "/mo";
-            else donutCenter.innerHTML = "Mix";
-
-            // 3. Render List
-            const listContainer = document.getElementById('allocList');
-            listContainer.innerHTML = '';
-            
-            let weightedRate = 0;
-
-            portfolio.forEach(item => {
-                weightedRate += (item.pct * item.rate);
-                
-                const percent = Math.round(item.pct * 100);
-                let displayAmt = "";
-                
-                if (mode === 'lumpsum') displayAmt = "₹" + (Math.round(item.pct * lumpAmt)).toLocaleString('en-IN');
-                else if (mode === 'sip') displayAmt = "₹" + (Math.round(item.pct * sipAmt)).toLocaleString('en-IN') + "/mo";
-                else displayAmt = `${percent}% Alloc`;
-
-                listContainer.innerHTML += `
-                    <div class="alloc-item">
-                        <div class="color-dot ${item.class}"></div>
-                        <div class="alloc-info">
-                            <span class="alloc-name">
-                                ${item.name} 
-                                <span style="font-weight:400; font-size:0.8em; color:var(--text-sub); margin-left:4px;">(~${item.rate}%)</span>
-                            </span>
-                            <span class="alloc-amt">${displayAmt}</span>
+                        <div class="settings-item">
+                            <label>Mid Cap %</label>
+                            <input type="number" id="r_mid" value="14" oninput="generatePlan()">
                         </div>
-                        <span class="alloc-pct">${percent}%</span>
-                    </div>
-                `;
-            });
-
-            // 4. Update Chart (Instantly)
-            drawDonut(portfolio);
-
-            // 5. Projections
-            calculateReturns(lumpAmt, sipAmt, years, weightedRate, stepUp);
-        }
-
-        function drawDonut(portfolio) {
-            const chart = document.getElementById('donutChart');
-            let currentAngle = 0;
-            let gradStr = "";
-            
-            portfolio.forEach(p => {
-                const deg = p.pct * 360;
-                const endAngle = currentAngle + deg;
-                gradStr += `${p.color} ${currentAngle}deg ${endAngle}deg, `;
-                currentAngle = endAngle;
-            });
-            
-            gradStr = gradStr.slice(0, -2);
-            chart.style.background = `conic-gradient(${gradStr})`;
-        }
-
-        function calculateReturns(lump, sip, years, rate, stepUp) {
-            const annualRate = rate / 100;
-            const monthlyRate = annualRate / 12;
-            const totalMonths = years * 12;
-
-            // Lumpsum FV
-            let fvLump = 0;
-            if (lump > 0) {
-                fvLump = lump * Math.pow((1 + annualRate), years);
-            }
-
-            // SIP FV with Step Up
-            let fvSip = 0;
-            let totalSipInvested = 0;
-            let currentSipAmount = sip;
-
-            if (sip > 0) {
-                for (let m = 1; m <= totalMonths; m++) {
-                    fvSip += currentSipAmount;
-                    totalSipInvested += currentSipAmount;
-                    fvSip = fvSip * (1 + monthlyRate);
-                    
-                    if (m % 12 === 0 && stepUp > 0) {
-                        currentSipAmount = currentSipAmount * (1 + (stepUp / 100));
-                    }
-                }
-            }
-
-            const totalInvested = lump + totalSipInvested;
-            const totalValue = fvLump + fvSip;
-            const totalProfit = totalValue - totalInvested;
-
-            const fmtTotal = formatMoney(totalValue);
-            
-            document.getElementById('valInvested').innerText = formatMoney(totalInvested);
-            document.getElementById('valReturns').innerText = "+" + formatMoney(totalProfit);
-            document.getElementById('valTotal').innerText = fmtTotal;
-            
-            // Update Mobile Sticky Footer
-            document.getElementById('mobValTotal').innerText = fmtTotal;
-        }
-
-        function formatMoney(n) {
-            if (n < 1000) return "₹" + Math.round(n);
-            if (n >= 1000 && n < 100000) return "₹" + (n/1000).toFixed(1) + "k";
-            if (n >= 100000 && n < 10000000) return "₹" + (n/100000).toFixed(2) + "L";
-            return "₹" + (n/10000000).toFixed(2) + "Cr";
-        }
-    </script>
-</body>
-</html>
-
-
+                        <div class="settings-item">
+                            <label>Flexi Cap %</label>
+                            <input type="number" id="r_flexi" value="13" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Large Cap %</label>
+                            <input type="number" id="r_large" value="12" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Bal. Adv (BAF) %</label>
+                            <input type="number" id="r_baf" value="10" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Hybrid Cons. %</label>
+                            <input type="number" id="r_hybrid_cons" value="8" oninput="generatePlan()">
+                        </div>
+                        <div class="settings-item">
+                            <label>Debt %</label>
+                            <input type="number" id="r_debt" value="7" oninput=
