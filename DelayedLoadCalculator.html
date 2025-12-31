@@ -1,355 +1,443 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Car Buying Strategy Calculator</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen font-sans text-slate-800">
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, Car, PiggyBank, AlertTriangle, Settings, Moon, Sun, Info, ChevronDown, ChevronUp } from 'lucide-react';
 
-    <div class="flex flex-col md:flex-row gap-6 p-4 max-w-7xl mx-auto">
+const CarStrategyCalculator = () => {
+  // --- State ---
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showSettings, setShowSettings] = useState(true); // Toggle for mobile accordion
+
+  const [inputs, setInputs] = useState({
+    initialCapital: 200000,
+    targetCarPrice: 1000000,
+    loanInterest: 8,
+    sipReturn: 12,
+    inflation: 5,
+    beaterMaintenance: 2000,
+    resaleValuePct: 40,
+    cycleYears: 5,
+    totalCycles: 4,
+    maintenanceFirstCycleOnly: true
+  });
+
+  const [results, setResults] = useState([]);
+  const [summary, setSummary] = useState(null);
+
+  // --- Theme Classes ---
+  const theme = {
+    bg: isDarkMode ? 'bg-slate-900' : 'bg-gray-50',
+    card: isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200',
+    text: isDarkMode ? 'text-slate-100' : 'text-slate-800',
+    subText: isDarkMode ? 'text-slate-400' : 'text-slate-500',
+    input: isDarkMode ? 'bg-slate-900 border-slate-600 text-white focus:ring-indigo-500' : 'bg-white border-slate-300 text-slate-900 focus:ring-indigo-500',
+    accentRaw: isDarkMode ? 'bg-indigo-600' : 'bg-indigo-600',
+    tableHeader: isDarkMode ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600',
+    tableRowHover: isDarkMode ? 'hover:bg-slate-750' : 'hover:bg-slate-50',
+    divider: isDarkMode ? 'border-slate-700' : 'border-slate-100',
+  };
+
+  // --- Calculations ---
+  useEffect(() => {
+    calculateStrategy();
+  }, [inputs]);
+
+  const calculatePMT = (rate, nper, pv) => {
+    if (rate === 0) return pv / nper;
+    const r = rate / 1200;
+    const n = nper * 12;
+    return (pv * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  };
+
+  const calculateStrategy = () => {
+    let timeline = [];
+    let currentCarPrice = inputs.targetCarPrice;
+    
+    // Person A State
+    let personACash = 0; 
+    
+    // Person B State
+    let personBLoan = currentCarPrice - inputs.initialCapital;
+
+    for (let cycle = 1; cycle <= inputs.totalCycles; cycle++) {
+      const isFirstCycle = cycle === 1;
+      const yearsElapsed = cycle * inputs.cycleYears;
+
+      // 1. Determine Person B's EMI
+      const emiB = calculatePMT(inputs.loanInterest, inputs.cycleYears, personBLoan);
       
-        <div class="w-full md:w-1/3 bg-white p-6 rounded-xl shadow-lg h-fit border border-slate-200 sticky top-4">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-indigo-700">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-                Scenario Settings
-            </h2>
-            
-            <div class="space-y-4">
-                <div class="space-y-2">
-                    <label class="text-xs font-semibold text-slate-500 uppercase">Starting Values</label>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Target Car Price (Today)</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-2 text-slate-400">₹</span>
-                            <input type="number" id="targetCarPrice" value="1000000" class="calc-input w-full pl-8 pr-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Initial Capital (Both)</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-2 text-slate-400">₹</span>
-                            <input type="number" id="initialCapital" value="200000" class="calc-input w-full pl-8 pr-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                    </div>
-                </div>
+      // 2. Determine Person A's Investment
+      let maintenanceCost = 0;
+      if (inputs.maintenanceFirstCycleOnly) {
+        maintenanceCost = isFirstCycle ? inputs.beaterMaintenance : 0;
+      } else {
+        maintenanceCost = inputs.beaterMaintenance;
+      }
 
-                <hr class="border-slate-100" />
+      let monthlyInvestA = emiB - maintenanceCost;
+      if (monthlyInvestA < 0) monthlyInvestA = 0;
 
-                <div class="space-y-2">
-                    <label class="text-xs font-semibold text-slate-500 uppercase">Rates & Inflation</label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Loan Int. (%)</label>
-                            <input type="number" id="loanInterest" value="10" class="calc-input w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">SIP Return (%)</label>
-                            <input type="number" id="sipReturn" value="12" class="calc-input w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Inflation (%)</label>
-                            <input type="number" id="inflation" value="5" class="calc-input w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Cycle (Yrs)</label>
-                            <input type="number" id="cycleYears" value="5" class="calc-input w-full px-3 py-2 border rounded focus:ring-2 focus:ring-indigo-500 outline-none">
-                        </div>
-                    </div>
-                </div>
+      // 3. Grow Person A's Wealth
+      const r_monthly = inputs.sipReturn / 1200;
+      const n_months = inputs.cycleYears * 12;
+      
+      // A. SIP Growth
+      const sipFutureValue = monthlyInvestA * ((Math.pow(1 + r_monthly, n_months) - 1) / r_monthly) * (1 + r_monthly);
+      
+      // B. Lump Sum Growth (Surplus from previous cycle)
+      // Double Check: We only grow positive cash. If previous cycle ended in shortfall (0 cash), this adds 0.
+      const cashGrowth = personACash > 0 ? personACash * Math.pow(1 + inputs.sipReturn / 100, inputs.cycleYears) : 0;
+      
+      let totalLiquidCashA = sipFutureValue + cashGrowth;
 
-                <hr class="border-slate-100" />
+      // 4. End of Cycle Asset Values
+      const resaleValueB = currentCarPrice * (inputs.resaleValuePct / 100);
+      
+      let resaleValueA;
+      if (isFirstCycle) {
+        resaleValueA = inputs.initialCapital * 0.10; // Scrap value
+      } else {
+        resaleValueA = currentCarPrice * (inputs.resaleValuePct / 100);
+      }
 
-                <div class="bg-orange-50 p-4 rounded-lg border border-orange-100">
-                    <label class="text-xs font-bold text-orange-800 uppercase flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                        Person A's Handicap
-                    </label>
-                    <div class="mt-2">
-                        <label class="block text-sm font-medium mb-1 text-slate-700">Extra Monthly Repairs (Cycle 1)</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-2 text-slate-400">₹</span>
-                            <input type="number" id="beaterMaintenance" value="3000" class="calc-input w-full pl-8 pr-3 py-2 border border-orange-200 rounded focus:ring-2 focus:ring-orange-500 outline-none">
-                        </div>
-                        <p class="text-xs text-slate-500 mt-1">Repairs paid only during the first cycle while driving the used car.</p>
-                    </div>
-                </div>
+      const netWorthB_EndCycle = resaleValueB; 
+      const netWorthA_EndCycle = totalLiquidCashA + resaleValueA;
 
-            </div>
+      // 5. Upgrade Event
+      const nextCarPrice = currentCarPrice * Math.pow(1 + inputs.inflation / 100, inputs.cycleYears);
+
+      // Person B Action
+      const bDownPayment = resaleValueB;
+      const bNewLoanAmount = nextCarPrice - bDownPayment;
+
+      // Person A Action
+      const totalResourcesA = totalLiquidCashA + resaleValueA;
+      const aCashAfterPurchase = totalResourcesA - nextCarPrice;
+
+      // --- "No Loan" Logic ---
+      // If aCashAfterPurchase is negative, it means a Shortfall.
+      // Person A pays this out of pocket (Reset to 0 for next cycle).
+      // We record the shortfall to warn the user.
+      const shortfall = aCashAfterPurchase < 0 ? Math.abs(aCashAfterPurchase) : 0;
+      const surplus = aCashAfterPurchase > 0 ? aCashAfterPurchase : 0;
+
+      timeline.push({
+        cycle: cycle,
+        year: yearsElapsed,
+        carPriceNext: Math.round(nextCarPrice),
+        emi: Math.round(emiB),
+        maintenanceDeducted: Math.round(maintenanceCost),
+        investA: Math.round(monthlyInvestA),
+        netWorthA: Math.round(netWorthA_EndCycle),
+        netWorthB: Math.round(netWorthB_EndCycle),
+        cashInHandA: Math.round(aCashAfterPurchase), // Keep raw value for display
+        surplus: Math.round(surplus),
+        shortfall: Math.round(shortfall),
+        debtB: Math.round(bNewLoanAmount),
+        wealthGap: Math.round(netWorthA_EndCycle - netWorthB_EndCycle)
+      });
+
+      // Setup for next loop
+      // If there was a shortfall, A starts next cycle with 0 cash (assumed paid externally)
+      personACash = surplus; 
+      personBLoan = bNewLoanAmount;     
+      currentCarPrice = nextCarPrice;   
+    }
+
+    setResults(timeline);
+    const final = timeline[timeline.length - 1];
+    setSummary({
+      aCash: final.cashInHandA,
+      bDebt: final.debtB,
+      gap: final.wealthGap,
+      totalYears: inputs.cycleYears * inputs.totalCycles
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setInputs(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : (parseFloat(value) || 0)
+    }));
+  };
+
+  const formatCurrency = (val) => {
+    const absVal = Math.abs(val);
+    const formatted = new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(absVal);
+    return val < 0 ? `-${formatted}` : formatted;
+  };
+
+  return (
+    <div className={`min-h-screen font-sans transition-colors duration-300 ${theme.bg} ${theme.text}`}>
+      
+      {/* Header / Nav */}
+      <div className={`${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'} border-b px-4 py-3 sticky top-0 z-20 flex justify-between items-center shadow-sm`}>
+        <div className="flex items-center gap-2">
+          <TrendingUp className="text-indigo-500" />
+          <h1 className="font-bold text-lg md:text-xl">Car Strategy Simulator</h1>
         </div>
+        <button 
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className={`p-2 rounded-full ${isDarkMode ? 'bg-slate-700 text-yellow-400' : 'bg-slate-100 text-slate-600'}`}
+        >
+          {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+      </div>
 
-        <div class="w-full md:w-2/3 space-y-6">
+      <div className="max-w-7xl mx-auto p-4 flex flex-col lg:flex-row gap-6">
+        
+        {/* SETTINGS PANEL (Collapsible on Mobile) */}
+        <div className={`lg:w-1/3 flex-shrink-0`}>
+          <div className={`rounded-xl shadow-lg border overflow-hidden ${theme.card}`}>
+            <button 
+              onClick={() => setShowSettings(!showSettings)}
+              className="w-full px-6 py-4 flex justify-between items-center font-bold text-lg lg:cursor-default"
+            >
+              <div className="flex items-center gap-2">
+                <Settings size={20} className="text-indigo-500" />
+                <span>Configuration</span>
+              </div>
+              <span className="lg:hidden text-slate-400">
+                {showSettings ? <ChevronUp /> : <ChevronDown />}
+              </span>
+            </button>
             
-            <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-emerald-600 text-white p-6 rounded-xl shadow-lg relative overflow-hidden">
-                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4">
-                        <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <h3 class="text-emerald-100 font-semibold mb-1">Person A (The Investor)</h3>
-                    <p class="text-sm opacity-80 mb-4">Driven a "Beater" for first cycle</p>
-                    
-                    <div class="flex flex-col gap-1">
-                        <span class="text-sm text-emerald-100">Liquid Cash Available</span>
-                        <span id="summaryACash" class="text-3xl font-bold">₹0</span>
-                    </div>
-                    
-                    <div class="mt-4 pt-4 border-t border-emerald-500 flex justify-between items-center">
-                        <span class="text-sm">Status after <span class="totalYearsDisp">20</span> years:</span>
-                        <span class="font-bold bg-emerald-800 px-2 py-1 rounded text-xs uppercase">Wealthy</span>
-                    </div>
-                </div>
-
-                <div class="bg-rose-600 text-white p-6 rounded-xl shadow-lg relative overflow-hidden">
-                    <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4">
-                         <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 19H5V5h14v14z"></path></svg>
-                    </div>
-                    <h3 class="text-rose-100 font-semibold mb-1">Person B (The Borrower)</h3>
-                    <p class="text-sm opacity-80 mb-4">Always drove new cars</p>
-                    
-                    <div class="flex flex-col gap-1">
-                        <span class="text-sm text-rose-100">Debt (New Loan Amount)</span>
-                        <span id="summaryBDebt" class="text-3xl font-bold">₹0</span>
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-rose-500 flex justify-between items-center">
-                        <span class="text-sm">Status after <span class="totalYearsDisp">20</span> years:</span>
-                        <span class="font-bold bg-rose-800 px-2 py-1 rounded text-xs uppercase">In Debt</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-indigo-900 text-white p-4 rounded-lg shadow flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                    <div>
-                        <p class="text-xs text-indigo-300 uppercase font-bold tracking-wider">Total Net Worth Gap</p>
-                        <p id="summaryGap" class="text-xl md:text-2xl font-bold">Person A is richer by ₹0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
-                <div class="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                     <h3 class="font-bold text-slate-700">Scenario Timeline</h3>
-                     <span id="tableHeaderStats" class="text-xs bg-slate-200 text-slate-600 px-2 py-1 rounded">Inflation: 5% | Interest: 10%</span>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
-                            <tr>
-                                <th class="px-4 py-3">Year</th>
-                                <th class="px-4 py-3">Event</th>
-                                <th class="px-4 py-3 text-right">Person B (Loan)</th>
-                                <th class="px-4 py-3 text-right">Person A (Invest)</th>
-                                <th class="px-4 py-3 text-right">A's Cash Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody id="resultsTableBody" class="divide-y divide-slate-100">
-                            </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-blue-800 flex gap-3">
-                <svg class="flex-shrink-0 mt-1 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            {/* Form Content */}
+            <div className={`${showSettings ? 'block' : 'hidden'} lg:block px-6 pb-6 space-y-6`}>
+              
+              {/* Basics */}
+              <div className="space-y-3">
+                <label className={`text-xs font-bold uppercase ${theme.subText} tracking-wider`}>Starting Values</label>
                 <div>
-                    <p class="font-semibold mb-1">How this calculation works:</p>
-                    <ul class="list-disc pl-4 space-y-1 opacity-90">
-                        <li>
-                            <strong>Cycle 1 (Start):</strong> Person A drives a cheap car (value = initial capital). They invest the equivalent of Person B's EMI minus the monthly repair costs.
-                        </li>
-                        <li>
-                            <strong>Cycle 2+ (Later):</strong> Person A buys the new car with accumulated cash. They continue to invest the amount Person B is paying in EMI. Since A now drives a new car too, their maintenance costs are assumed to be equal to B's.
-                        </li>
-                        <li>
-                            <strong>The Result:</strong> The "Cash Balance" shown is what Person A has <em>remaining</em> in the bank immediately after buying the brand new car with cash.
-                        </li>
-                    </ul>
+                  <label className="block text-sm font-medium mb-1">Target Car Price (Today)</label>
+                  <div className="relative">
+                    <span className={`absolute left-3 top-2.5 ${theme.subText}`}>₹</span>
+                    <input 
+                      type="number" name="targetCarPrice" value={inputs.targetCarPrice} onChange={handleInputChange}
+                      className={`w-full pl-8 pr-3 py-2 rounded border outline-none focus:ring-2 ${theme.input}`}
+                    />
+                  </div>
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Initial Capital</label>
+                  <div className="relative">
+                    <span className={`absolute left-3 top-2.5 ${theme.subText}`}>₹</span>
+                    <input 
+                      type="number" name="initialCapital" value={inputs.initialCapital} onChange={handleInputChange}
+                      className={`w-full pl-8 pr-3 py-2 rounded border outline-none focus:ring-2 ${theme.input}`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={`border-t ${theme.divider}`}></div>
+
+              {/* Rates */}
+              <div className="space-y-3">
+                <label className={`text-xs font-bold uppercase ${theme.subText} tracking-wider`}>Rates</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Loan Interest (%)</label>
+                    <input 
+                      type="number" name="loanInterest" value={inputs.loanInterest} onChange={handleInputChange}
+                      className={`w-full px-3 py-2 rounded border outline-none focus:ring-2 ${theme.input}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">SIP Return (%)</label>
+                    <input 
+                      type="number" name="sipReturn" value={inputs.sipReturn} onChange={handleInputChange}
+                      className={`w-full px-3 py-2 rounded border outline-none focus:ring-2 ${theme.input}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Inflation (%)</label>
+                    <input 
+                      type="number" name="inflation" value={inputs.inflation} onChange={handleInputChange}
+                      className={`w-full px-3 py-2 rounded border outline-none focus:ring-2 ${theme.input}`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Cycle (Years)</label>
+                    <input 
+                      type="number" name="cycleYears" value={inputs.cycleYears} onChange={handleInputChange}
+                      className={`w-full px-3 py-2 rounded border outline-none focus:ring-2 ${theme.input}`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className={`border-t ${theme.divider}`}></div>
+
+              {/* Maintenance */}
+              <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-orange-900/20 border-orange-800' : 'bg-orange-50 border-orange-100'}`}>
+                <label className="text-xs font-bold text-orange-500 uppercase flex items-center gap-1 mb-2">
+                  <AlertTriangle size={12} /> Maintenance Drag
+                </label>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Monthly Repair Cost</label>
+                  <div className="relative">
+                    <span className={`absolute left-3 top-2.5 ${theme.subText}`}>₹</span>
+                    <input 
+                      type="number" name="beaterMaintenance" value={inputs.beaterMaintenance} onChange={handleInputChange}
+                      className={`w-full pl-8 pr-3 py-2 rounded border outline-none focus:ring-2 ${theme.input} ${isDarkMode ? 'border-orange-800' : 'border-orange-200'}`}
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center gap-2">
+                  <input 
+                    type="checkbox" id="maintenanceFirstCycleOnly" name="maintenanceFirstCycleOnly"
+                    checked={inputs.maintenanceFirstCycleOnly} onChange={handleInputChange}
+                    className="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
+                  />
+                  <label htmlFor="maintenanceFirstCycleOnly" className={`text-xs ${theme.subText}`}>
+                    Cycle 1 only (Beater Phase)
+                  </label>
+                </div>
+              </div>
+
             </div>
+          </div>
+        </div>
+
+        {/* RESULTS PANEL */}
+        <div className="lg:w-2/3 flex flex-col gap-6">
+          
+          {/* Summary Cards */}
+          {summary && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Person A */}
+              <div className="bg-emerald-600 text-white p-5 rounded-xl shadow-lg relative overflow-hidden">
+                <div className="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4">
+                  <PiggyBank size={100} />
+                </div>
+                <div className="relative z-10">
+                  <h3 className="text-emerald-100 font-semibold mb-1 text-sm uppercase tracking-wide">Person A (Investor)</h3>
+                  <div className="flex flex-col gap-0.5 mt-2">
+                    <span className="text-xs text-emerald-200">Surplus Cash (Year {summary.totalYears})</span>
+                    <span className="text-2xl md:text-3xl font-bold">{formatCurrency(summary.aCash > 0 ? summary.aCash : 0)}</span>
+                  </div>
+                  {summary.aCash < 0 && (
+                     <div className="mt-2 bg-black/20 p-2 rounded text-xs text-emerald-100 flex items-start gap-2">
+                       <AlertTriangle size={14} className="mt-0.5 text-yellow-300"/>
+                       <span>Finished with a shortfall. Investment was too low to match inflation.</span>
+                     </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Person B */}
+              <div className="bg-rose-600 text-white p-5 rounded-xl shadow-lg relative overflow-hidden">
+                <div className="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4">
+                  <Car size={100} />
+                </div>
+                <div className="relative z-10">
+                  <h3 className="text-rose-100 font-semibold mb-1 text-sm uppercase tracking-wide">Person B (Borrower)</h3>
+                  <div className="flex flex-col gap-0.5 mt-2">
+                    <span className="text-xs text-rose-200">Total Debt (Year {summary.totalYears})</span>
+                    <span className="text-2xl md:text-3xl font-bold">{formatCurrency(summary.bDebt)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Timeline Table */}
+          <div className={`rounded-xl shadow-lg border overflow-hidden ${theme.card}`}>
+            <div className={`p-4 border-b ${theme.divider} ${isDarkMode ? 'bg-slate-800' : 'bg-slate-50'} flex flex-col sm:flex-row justify-between sm:items-center gap-2`}>
+              <h3 className="font-bold">Timeline</h3>
+              <div className="flex gap-2">
+                <span className={`text-xs px-2 py-1 rounded ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>Inflation: {inputs.inflation}%</span>
+                <span className={`text-xs px-2 py-1 rounded ${isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>Cycles: {inputs.totalCycles}</span>
+              </div>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left whitespace-nowrap">
+                <thead className={`uppercase text-xs ${theme.tableHeader}`}>
+                  <tr>
+                    <th className="px-4 py-3">Cycle</th>
+                    <th className="px-4 py-3 text-right">Car Price</th>
+                    <th className="px-4 py-3 text-right">B: New Loan</th>
+                    <th className="px-4 py-3 text-right">A: Invested</th>
+                    <th className="px-4 py-3 text-right">A: Surplus/Shortfall</th>
+                  </tr>
+                </thead>
+                <tbody className={`divide-y ${theme.divider}`}>
+                  {results.map((row, index) => (
+                    <tr key={index} className={`${theme.tableRowHover} transition-colors`}>
+                      <td className="px-4 py-3">
+                        <div className="font-bold">Year {row.year}</div>
+                        <div className={`text-xs ${theme.subText}`}>Cycle {row.cycle} End</div>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="font-medium">{formatCurrency(row.carPriceNext)}</div>
+                      </td>
+                      
+                      {/* B Column */}
+                      <td className="px-4 py-3 text-right">
+                        <div className="text-rose-500 font-bold">{formatCurrency(row.debtB)}</div>
+                        <div className={`text-xs ${theme.subText}`}>EMI: {formatCurrency(row.emi)}</div>
+                      </td>
+
+                      {/* A Column */}
+                      <td className="px-4 py-3 text-right">
+                        <div className="text-emerald-500 font-medium">{formatCurrency(row.investA)}<span className="text-xs opacity-70">/mo</span></div>
+                        {row.maintenanceDeducted > 0 && (
+                          <div className="text-xs text-orange-500 flex justify-end items-center gap-1">
+                            -{formatCurrency(row.maintenanceDeducted)} repairs
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Result Column */}
+                      <td className="px-4 py-3 text-right">
+                         {row.shortfall > 0 ? (
+                           <div className="flex flex-col items-end">
+                             <span className="text-red-500 font-bold">-{formatCurrency(row.shortfall)}</span>
+                             <span className="text-[10px] text-red-400 uppercase tracking-wide">Shortfall (Paid Cash)</span>
+                           </div>
+                         ) : (
+                           <div className="flex flex-col items-end">
+                             <span className="text-emerald-600 font-bold">+{formatCurrency(row.surplus)}</span>
+                             <span className="text-[10px] text-emerald-500 uppercase tracking-wide">Surplus Reinvested</span>
+                           </div>
+                         )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Logic Explanation Box */}
+          <div className={`p-4 rounded-lg border text-sm flex gap-3 ${isDarkMode ? 'bg-blue-900/20 border-blue-800 text-blue-200' : 'bg-blue-50 border-blue-100 text-blue-800'}`}>
+            <Info className="flex-shrink-0 mt-0.5" size={18} />
+            <div className="space-y-2">
+              <p className="font-bold">Math Double-Check:</p>
+              <ul className="list-disc pl-4 opacity-90 space-y-1">
+                <li>
+                  <strong>Surplus Calculation:</strong> (SIP Value + Previous Cycle Surplus Growth + Trade-in Value) - New Car Price.
+                </li>
+                <li>
+                  <strong>Surplus Reinvestment:</strong> If Person A has a surplus, it is invested as a Lump Sum for the next cycle. 
+                  <span className="italic"> (We checked: No double counting occurs.)</span>
+                </li>
+                <li>
+                  <strong>Shortfall Handling:</strong> If Person A has a shortfall (negative balance), we assume they pay the difference out-of-pocket to avoid taking a loan. The next cycle starts with ₹0 cash.
+                </li>
+              </ul>
+            </div>
+          </div>
 
         </div>
+      </div>
     </div>
+  );
+};
 
-    <script>
-        // Formatting helper
-        const formatCurrency = (val) => {
-            if (val === undefined || val === null) return "₹0";
-            return new Intl.NumberFormat('en-IN', {
-                style: 'currency',
-                currency: 'INR',
-                maximumFractionDigits: 0
-            }).format(val);
-        };
-
-        // Math Helpers
-        const calculatePMT = (rate, nper, pv) => {
-            if (rate === 0) return pv / nper;
-            const r = rate / 1200; // Monthly rate
-            const n = nper * 12; // Months
-            return (pv * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-        };
-
-        // Main Calculation
-        function calculate() {
-            // Get inputs
-            const inputs = {
-                initialCapital: parseFloat(document.getElementById('initialCapital').value) || 0,
-                targetCarPrice: parseFloat(document.getElementById('targetCarPrice').value) || 0,
-                loanInterest: parseFloat(document.getElementById('loanInterest').value) || 0,
-                sipReturn: parseFloat(document.getElementById('sipReturn').value) || 0,
-                inflation: parseFloat(document.getElementById('inflation').value) || 0,
-                beaterMaintenance: parseFloat(document.getElementById('beaterMaintenance').value) || 0,
-                cycleYears: parseFloat(document.getElementById('cycleYears').value) || 5,
-                resaleValuePct: 40,
-                totalCycles: 4 // Fixed at 4 cycles (20 years usually)
-            };
-
-            let timeline = [];
-            let currentCarPrice = inputs.targetCarPrice;
-            
-            // --- Person A State ---
-            let personACash = 0; 
-            // Cycle 1: A buys beater.
-            
-            // --- Person B State ---
-            // Cycle 1: B buys new car. Loan = Price - Capital
-            let personBLoan = currentCarPrice - inputs.initialCapital;
-            let personBNetWorth = 0;
-
-            for (let cycle = 1; cycle <= inputs.totalCycles; cycle++) {
-                const isFirstCycle = cycle === 1;
-                const yearsElapsed = cycle * inputs.cycleYears;
-
-                // 1. Determine Person B's EMI
-                const emiB = calculatePMT(inputs.loanInterest, inputs.cycleYears, personBLoan);
-                
-                // 2. Determine Person A's Investment
-                // In Cycle 1, A pays maintenance. In later cycles, A has a new car.
-                const maintenanceCost = isFirstCycle ? inputs.beaterMaintenance : 0;
-                let monthlyInvestA = emiB - maintenanceCost;
-                if (monthlyInvestA < 0) monthlyInvestA = 0; 
-
-                // 3. Grow Person A's Wealth
-                // Growth of SIP
-                const r_monthly = inputs.sipReturn / 1200;
-                const n_months = inputs.cycleYears * 12;
-                const sipFutureValue = monthlyInvestA * ((Math.pow(1 + r_monthly, n_months) - 1) / r_monthly) * (1 + r_monthly);
-                
-                // Growth of Cash on Hand (Lump sum)
-                const cashGrowth = personACash * Math.pow(1 + inputs.sipReturn / 100, inputs.cycleYears);
-                
-                let totalLiquidCashA = sipFutureValue + cashGrowth;
-
-                // 4. End of Cycle Asset Values
-                // Car Depreciates
-                const resaleValueB = currentCarPrice * (inputs.resaleValuePct / 100);
-                
-                let resaleValueA;
-                if (isFirstCycle) {
-                    // Beater scrap value
-                    resaleValueA = inputs.initialCapital * 0.10; 
-                } else {
-                    // Standard car resale
-                    resaleValueA = currentCarPrice * (inputs.resaleValuePct / 100);
-                }
-
-                const netWorthB_EndCycle = resaleValueB; // Loan paid off
-                const netWorthA_EndCycle = totalLiquidCashA + resaleValueA;
-
-                // 5. The "Upgrade" Event (Buying Next Car)
-                const nextCarPrice = currentCarPrice * Math.pow(1 + inputs.inflation / 100, inputs.cycleYears);
-
-                // --- Person B Action ---
-                // Trade in old car as down payment
-                const bDownPayment = resaleValueB;
-                const bNewLoanAmount = nextCarPrice - bDownPayment;
-
-                // --- Person A Action ---
-                // Sell old car -> Add to liquid cash -> Buy new car cash
-                const totalResourcesA = totalLiquidCashA + resaleValueA;
-                const aCashAfterPurchase = totalResourcesA - nextCarPrice;
-
-                // Store Data
-                timeline.push({
-                    cycle: cycle,
-                    year: yearsElapsed,
-                    carPriceNext: nextCarPrice,
-                    emi: emiB,
-                    investA: monthlyInvestA,
-                    cashInHandA: aCashAfterPurchase,
-                    debtB: bNewLoanAmount,
-                    wealthGap: netWorthA_EndCycle - netWorthB_EndCycle
-                });
-
-                // Reset for next loop
-                personACash = aCashAfterPurchase; 
-                personBLoan = bNewLoanAmount;      
-                currentCarPrice = nextCarPrice;    
-            }
-
-            updateUI(timeline, inputs);
-        }
-
-        function updateUI(timeline, inputs) {
-            const final = timeline[timeline.length - 1];
-
-            // Update Summary Cards
-            document.getElementById('summaryACash').innerText = formatCurrency(final.cashInHandA);
-            document.getElementById('summaryBDebt').innerText = formatCurrency(final.debtB);
-            document.getElementById('summaryGap').innerText = `Person A is richer by ${formatCurrency(final.wealthGap)}`;
-            
-            // Update Text Spans
-            document.querySelectorAll('.totalYearsDisp').forEach(el => el.innerText = inputs.totalCycles * inputs.cycleYears);
-            document.getElementById('tableHeaderStats').innerText = `Inflation: ${inputs.inflation}% | Interest: ${inputs.loanInterest}%`;
-
-            // Update Table
-            const tbody = document.getElementById('resultsTableBody');
-            tbody.innerHTML = '';
-
-            timeline.forEach(row => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50";
-                
-                const cashClass = row.cashInHandA >= 0 ? 'text-emerald-700' : 'text-rose-600';
-                
-                // Maint warning logic
-                const maintWarning = row.cycle === 1 
-                    ? `<div class="text-xs text-orange-500 mt-1">Paid Repairs: ${formatCurrency(inputs.beaterMaintenance)}/mo</div>` 
-                    : '';
-
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-slate-500">${row.year}</td>
-                    <td class="px-4 py-3">
-                        <div class="font-semibold text-slate-800">End of Cycle ${row.cycle}</div>
-                        <div class="text-xs text-slate-500 mt-1">New Car Price: ${formatCurrency(row.carPriceNext)}</div>
-                    </td>
-                    <td class="px-4 py-3 text-right">
-                        <div class="text-rose-600 font-medium">Pays EMI: ${formatCurrency(row.emi)}</div>
-                        <div class="text-xs text-slate-500 mt-1">New Loan: ${formatCurrency(row.debtB)}</div>
-                    </td>
-                    <td class="px-4 py-3 text-right">
-                        <div class="text-emerald-600 font-medium">Invests: ${formatCurrency(row.investA)}</div>
-                        ${maintWarning}
-                    </td>
-                    <td class="px-4 py-3 text-right">
-                        <div class="font-bold text-lg ${cashClass}">${formatCurrency(row.cashInHandA)}</div>
-                        <div class="text-xs text-slate-400">Surplus after buying car</div>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // Event Listeners
-        const allInputs = document.querySelectorAll('.calc-input');
-        allInputs.forEach(input => {
-            input.addEventListener('input', calculate);
-        });
-
-        // Initial Run
-        calculate();
-    </script>
-</body>
-</html>
+export default CarStrategyCalculator;
