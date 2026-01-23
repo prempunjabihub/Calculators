@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Income Tax Calculator (FY 2025-26)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; opacity: 0; transform: translateY(5px); }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        .input-group:focus-within { border-color: #3B82F6; ring: 2px; ring-color: #93C5FD; }
+    </style>
+</head>
+<body class="min-h-screen p-4 flex items-start justify-center">
+    <div class="w-full max-w-5xl bg-white shadow-xl rounded-2xl p-6 md:p-8 mt-4">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4 border-gray-200">
+            <div>
+                <h1 class="text-3xl font-extrabold text-blue-700">India Tax Calculator</h1>
+                <p class="text-sm text-gray-500">FY 2025-26 (AY 2026-27) | Individuals < 60 yrs</p>
+            </div>
+            <div id="savingsBanner" class="hidden mt-4 md:mt-0 bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold border border-green-300 shadow-sm fade-in">
+                <!-- Savings text will appear here -->
+            </div>
+        </div>
+
+        <!-- Inputs Container -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            
+            <!-- Primary Income Section -->
+            <div class="bg-blue-50 p-6 rounded-xl border border-blue-100 relative">
+                <!-- Tabs -->
+                <div class="flex space-x-1 bg-blue-100 p-1 rounded-lg absolute -top-4 left-6 shadow-sm">
+                    <button onclick="setIncomeType('salary')" id="btnSalary" class="px-4 py-1.5 rounded-md text-sm font-bold transition-all shadow-sm bg-white text-blue-700 ring-1 ring-blue-200">
+                        Salaried
+                    </button>
+                    <button onclick="setIncomeType('business')" id="btnBusiness" class="px-4 py-1.5 rounded-md text-sm font-bold text-gray-600 hover:bg-white/50 transition-all">
+                        Business
+                    </button>
+                </div>
+
+                <div class="mt-2">
+                    <label for="grossInput" id="inputLabel" class="block text-md font-bold text-gray-800 mb-2">
+                        Annual Gross Salary
+                    </label>
+                    <div class="relative rounded-lg shadow-sm bg-white border border-gray-300 input-group transition-all">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500">₹</span>
+                        </div>
+                        <input type="number" id="grossInput" value="1500000" min="0" step="1000"
+                               class="block w-full pl-8 pr-4 py-3 rounded-lg text-lg font-bold text-gray-900 focus:outline-none bg-transparent"
+                               placeholder="1500000" oninput="calculateTax()">
+                    </div>
+                    <p id="amountInLakhs" class="mt-2 text-xs text-gray-500 font-medium h-4"></p>
+                </div>
+            </div>
+
+            <!-- Rental Income Section -->
+            <div class="bg-purple-50 p-6 rounded-xl border border-purple-100 relative">
+                <div class="absolute -top-3 left-6 bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full border border-purple-200 shadow-sm">
+                    Additional Income
+                </div>
+                <div class="mt-2">
+                    <label for="rentalInput" class="block text-md font-bold text-gray-800 mb-2">
+                        Annual Rental Income
+                    </label>
+                    <div class="relative rounded-lg shadow-sm bg-white border border-gray-300 input-group transition-all">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500">₹</span>
+                        </div>
+                        <input type="number" id="rentalInput" value="0" min="0" step="1000"
+                               class="block w-full pl-8 pr-4 py-3 rounded-lg text-lg font-bold text-gray-900 focus:outline-none bg-transparent"
+                               placeholder="0" oninput="calculateTax()">
+                    </div>
+                    <p class="mt-2 text-xs text-purple-600 font-semibold">
+                        * A flat 30% deduction is automatically applied to this.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tax Results Container -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+            <!-- New Tax Regime Card -->
+            <div class="relative bg-white border-2 border-green-100 rounded-2xl shadow-lg overflow-hidden fade-in" style="animation-delay: 0.1s;">
+                <div class="bg-green-50 p-4 border-b border-green-100">
+                    <h2 class="text-xl font-bold text-green-800 flex items-center">
+                        <span class="bg-green-200 text-green-800 p-1.5 rounded-full mr-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
+                        New Tax Regime (Default)
+                    </h2>
+                    <p class="text-xs text-green-700 mt-1">Standard Deduction: <span id="sdNewDisplay" class="font-bold">₹75,000</span></p>
+                </div>
+                
+                <div class="p-6 space-y-3">
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">Net Taxable Income</span>
+                        <span id="taxableNew" class="text-xl font-bold text-gray-900">₹0</span>
+                    </div>
+                    
+                    <!-- Breakdown Box -->
+                    <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-500 space-y-1 my-3 border border-gray-100">
+                        <p class="font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Income Breakdown:</p>
+                        <div id="incomeBreakdownNew" class="mb-3 space-y-1"></div>
+                        
+                        <p class="font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Tax Calculation:</p>
+                        <div id="taxBreakdownNew"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-gray-600 font-semibold">Total Tax Payable</span>
+                        <span id="totalTaxNew" class="text-2xl font-extrabold text-green-700">₹0</span>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-dashed border-gray-300">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-gray-500 uppercase tracking-wide">Monthly In-Hand</span>
+                            <span id="monthlyNew" class="text-xl font-bold text-gray-800">₹0</span>
+                        </div>
+                        <p class="text-[10px] text-right text-gray-400 mt-1">(Total Income - Tax) / 12</p>
+                    </div>
+                    
+                    <div id="rebateNewMessage" class="hidden mt-2 p-2 bg-green-100 text-green-800 text-xs rounded text-center font-semibold">
+                        Full Tax Rebate Applied (Taxable Income ≤ ₹12L)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Old Tax Regime Card -->
+            <div class="relative bg-white border-2 border-red-100 rounded-2xl shadow-lg overflow-hidden fade-in" style="animation-delay: 0.2s;">
+                <div class="bg-red-50 p-4 border-b border-red-100">
+                    <h2 class="text-xl font-bold text-red-800 flex items-center">
+                        <span class="bg-red-200 text-red-800 p-1.5 rounded-full mr-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </span>
+                        Old Tax Regime (Baseline)
+                    </h2>
+                    <p class="text-xs text-red-700 mt-1">Standard Deduction: <span id="sdOldDisplay" class="font-bold">₹50,000</span></p>
+                </div>
+
+                <div class="p-6 space-y-3">
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">Net Taxable Income</span>
+                        <span id="taxableOld" class="text-xl font-bold text-gray-900">₹0</span>
+                    </div>
+
+                    <!-- Breakdown Box -->
+                    <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-500 space-y-1 my-3 border border-gray-100">
+                        <p class="font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Income Breakdown:</p>
+                        <div id="incomeBreakdownOld" class="mb-3 space-y-1"></div>
+
+                        <p class="font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Tax Calculation:</p>
+                        <div id="taxBreakdownOld"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2">
+                        <span class="text-gray-600 font-semibold">Total Tax Payable</span>
+                        <span id="totalTaxOld" class="text-2xl font-extrabold text-red-700">₹0</span>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-dashed border-gray-300">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-gray-500 uppercase tracking-wide">Monthly In-Hand</span>
+                            <span id="monthlyOld" class="text-xl font-bold text-gray-800">₹0</span>
+                        </div>
+                        <p class="text-[10px] text-right text-gray-400 mt-1">(Total Income - Tax) / 12</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p id="disclaimerText" class="text-center text-xs text-gray-400 mt-8">
+            * Old Regime assumes 0 deductions. Rental Income includes 30% std deduction automatically.
+        </p>
+
+    </div>
+
+    <script>
+        // Constants
+        const CESS_RATE = 0.04;
+        const SALARY_SD_NEW = 75000; 
+        const SALARY_SD_OLD = 50000; 
+        const BUSINESS_SD = 0; 
+        const RENTAL_SD_RATE = 0.30; // 30% deduction for repairs
+        const NEW_REBATE_LIMIT = 1200000; 
+
+        let currentType = 'salary'; 
+
+        const formatINR = (amount) => {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(amount);
+        };
+
+        const formatCompact = (amount) => {
+             if (amount >= 100000) return (amount/100000).toFixed(1) + "L";
+             if (amount === Infinity) return "Above";
+             return (amount/1000).toFixed(0) + "k";
+        };
+
+        function setIncomeType(type) {
+            currentType = type;
+            const btnSalary = document.getElementById('btnSalary');
+            const btnBusiness = document.getElementById('btnBusiness');
+            const inputLabel = document.getElementById('inputLabel');
+            const sdNewDisplay = document.getElementById('sdNewDisplay');
+            const sdOldDisplay = document.getElementById('sdOldDisplay');
+
+            if (type === 'salary') {
+                btnSalary.className = "px-4 py-1.5 rounded-md text-sm font-bold transition-all shadow-sm bg-white text-blue-700 ring-1 ring-blue-200";
+                btnBusiness.className = "px-4 py-1.5 rounded-md text-sm font-bold text-gray-600 hover:bg-white/50 transition-all";
+                inputLabel.textContent = "Annual Gross Salary";
+                sdNewDisplay.textContent = formatINR(SALARY_SD_NEW);
+                sdOldDisplay.textContent = formatINR(SALARY_SD_OLD);
+            } else {
+                btnBusiness.className = "px-4 py-1.5 rounded-md text-sm font-bold transition-all shadow-sm bg-white text-blue-700 ring-1 ring-blue-200";
+                btnSalary.className = "px-4 py-1.5 rounded-md text-sm font-bold text-gray-600 hover:bg-white/50 transition-all";
+                inputLabel.textContent = "Annual Business Profit";
+                sdNewDisplay.textContent = "₹0";
+                sdOldDisplay.textContent = "₹0";
+            }
+            calculateTax();
+        }
+
+        function calculateRegimeTax(totalTaxable, regime) {
+            let tax = 0;
+            let slabs = [];
+            let breakdownHtml = "";
+
+            if (regime === 'new') {
+                slabs = [
+                    { limit: 400000, rate: 0.00 },
+                    { limit: 800000, rate: 0.05 },
+                    { limit: 1200000, rate: 0.10 },
+                    { limit: 1600000, rate: 0.15 },
+                    { limit: 2000000, rate: 0.20 },
+                    { limit: 2400000, rate: 0.25 },
+                    { limit: Infinity, rate: 0.30 }
+                ];
+            } else {
+                slabs = [
+                    { limit: 250000, rate: 0.00 },
+                    { limit: 500000, rate: 0.05 },
+                    { limit: 1000000, rate: 0.20 },
+                    { limit: Infinity, rate: 0.30 }
+                ];
+            }
+
+            let incomeRemaining = totalTaxable;
+            let prevLimit = 0;
+
+            for (const slab of slabs) {
+                const slabUpperLimit = slab.limit;
+                const slabRate = slab.rate;
+                if (incomeRemaining <= 0) break;
+
+                const rangeSize = slabUpperLimit - prevLimit;
+                const incomeInSlab = Math.min(rangeSize, incomeRemaining);
+                
+                if (incomeInSlab > 0) {
+                    const taxForSlab = incomeInSlab * slabRate;
+                    tax += taxForSlab;
+                    
+                    if (slabRate > 0) {
+                        breakdownHtml += `<div class="flex justify-between">
+                            <span>₹${formatCompact(prevLimit)} - ₹${formatCompact(slabUpperLimit)} (${(slabRate*100).toFixed(0)}%)</span>
+                            <span>${formatINR(taxForSlab)}</span>
+                        </div>`;
+                    }
+                    incomeRemaining -= incomeInSlab;
+                }
+                prevLimit = slabUpperLimit;
+            }
+
+            if (regime === 'new' && totalTaxable <= NEW_REBATE_LIMIT) {
+                tax = Math.max(0, tax - 60000); 
+                breakdownHtml += `<div class="flex justify-between text-green-600 font-bold mt-1 pt-1 border-t border-gray-200"><span>Rebate u/s 87A</span><span>-${formatINR(60000)}</span></div>`;
+            }
+
+            const cess = tax * CESS_RATE;
+            const totalTax = tax + cess;
+            return { totalTax, breakdownHtml };
+        }
+
+        function generateIncomeBreakdown(gross, rent, sd, type) {
+            let html = "";
+            
+            // Main Income Line
+            html += `<div class="flex justify-between">
+                <span>${type === 'salary' ? 'Salary' : 'Business'} Income</span>
+                <span>${formatINR(gross)}</span>
+            </div>`;
+
+            // Standard Deduction (Main)
+            if (sd > 0) {
+                html += `<div class="flex justify-between text-red-500">
+                    <span>Less: Std Deduction</span>
+                    <span>-${formatINR(sd)}</span>
+                </div>`;
+            }
+
+            // Rental Logic
+            if (rent > 0) {
+                const rentDed = rent * RENTAL_SD_RATE;
+                const netRent = rent - rentDed;
+                html += `<div class="flex justify-between mt-1 pt-1 border-t border-gray-200 border-dashed">
+                    <span>Gross Rent</span>
+                    <span>${formatINR(rent)}</span>
+                </div>`;
+                html += `<div class="flex justify-between text-red-500 text-[10px] italic">
+                    <span>Less: 30% Deduction (Sec 24a)</span>
+                    <span>-${formatINR(rentDed)}</span>
+                </div>`;
+                 html += `<div class="flex justify-between font-semibold">
+                    <span>Net Rent</span>
+                    <span>${formatINR(netRent)}</span>
+                </div>`;
+            }
+
+            return html;
+        }
+
+        function calculateTax() {
+            const grossInput = document.getElementById('grossInput');
+            const rentalInput = document.getElementById('rentalInput');
+            
+            let grossAmount = parseFloat(grossInput.value || 0);
+            let rentalAmount = parseFloat(rentalInput.value || 0);
+
+            // Helper text
+            document.getElementById('amountInLakhs').textContent = grossAmount > 0 
+                ? `(That's ${formatINR(grossAmount / 100000)} Lakhs)` : "";
+
+            // Determine SD
+            let sdNew = (currentType === 'salary') ? SALARY_SD_NEW : BUSINESS_SD;
+            let sdOld = (currentType === 'salary') ? SALARY_SD_OLD : BUSINESS_SD;
+
+            // Calculate Net Rent
+            let netRentalIncome = Math.max(0, rentalAmount - (rentalAmount * RENTAL_SD_RATE));
+
+            // Total Taxable Income
+            const taxableNew = Math.max(0, (grossAmount - sdNew) + netRentalIncome);
+            const taxableOld = Math.max(0, (grossAmount - sdOld) + netRentalIncome);
+
+            // 1. New Regime
+            const resNew = calculateRegimeTax(taxableNew, 'new');
+            document.getElementById('taxableNew').textContent = formatINR(taxableNew);
+            document.getElementById('totalTaxNew').textContent = formatINR(resNew.totalTax);
+            document.getElementById('incomeBreakdownNew').innerHTML = generateIncomeBreakdown(grossAmount, rentalAmount, sdNew, currentType);
+            document.getElementById('taxBreakdownNew').innerHTML = resNew.breakdownHtml || "<span class='italic'>No tax</span>";
+            document.getElementById('monthlyNew').textContent = formatINR(Math.max(0, (grossAmount + rentalAmount - resNew.totalTax) / 12));
+            
+            if(currentType === 'new' && taxableNew <= NEW_REBATE_LIMIT) {
+                document.getElementById('rebateNewMessage').classList.remove('hidden');
+            } else {
+                document.getElementById('rebateNewMessage').classList.add('hidden');
+            }
+
+            // 2. Old Regime
+            const resOld = calculateRegimeTax(taxableOld, 'old');
+            document.getElementById('taxableOld').textContent = formatINR(taxableOld);
+            document.getElementById('totalTaxOld').textContent = formatINR(resOld.totalTax);
+            document.getElementById('incomeBreakdownOld').innerHTML = generateIncomeBreakdown(grossAmount, rentalAmount, sdOld, currentType);
+            document.getElementById('taxBreakdownOld').innerHTML = resOld.breakdownHtml || "<span class='italic'>No tax</span>";
+            document.getElementById('monthlyOld').textContent = formatINR(Math.max(0, (grossAmount + rentalAmount - resOld.totalTax) / 12));
+
+            // 3. Comparison
+            const savingsBanner = document.getElementById('savingsBanner');
+            if(grossAmount > 0 || rentalAmount > 0) {
+                const diff = resOld.totalTax - resNew.totalTax;
+                savingsBanner.classList.remove('hidden');
+                
+                if (diff > 0) {
+                    savingsBanner.className = "mt-4 md:mt-0 bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold border border-green-300 shadow-sm fade-in";
+                    savingsBanner.innerHTML = `New Regime saves you ${formatINR(diff)}! 🎉`;
+                } else if (diff < 0) {
+                    savingsBanner.className = "mt-4 md:mt-0 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-bold border border-yellow-300 shadow-sm fade-in";
+                    savingsBanner.innerHTML = `Old Regime is lower by ${formatINR(Math.abs(diff))} (Base)`;
+                } else {
+                    savingsBanner.className = "mt-4 md:mt-0 bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-bold border border-gray-300 shadow-sm fade-in";
+                    savingsBanner.innerHTML = `Both regimes tax the same amount.`;
+                }
+            } else {
+                savingsBanner.classList.add('hidden');
+            }
+        }
+
+        window.onload = calculateTax;
+    </script>
+</body>
+</html>
