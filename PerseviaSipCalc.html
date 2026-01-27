@@ -130,12 +130,12 @@
                 margin-bottom: 20px;
             }
             .donut-chart {
-                width: 160px !important;
-                height: 160px !important;
+                width: 220px !important;
+                height: 220px !important;
             }
             .donut-hole {
-                width: 110px !important;
-                height: 110px !important;
+                width: 150px !important;
+                height: 150px !important;
                 background: var(--card-bg) !important;
             }
             .theme-toggle {
@@ -238,6 +238,16 @@
             cursor: pointer;
             background: rgba(255,255,255,0.2);
             border-radius: 2px;
+        }
+        
+        /* HELPER TEXT FOR WORDS */
+        .word-display {
+            font-size: 0.8rem;
+            color: #4ade80; /* Greenish */
+            margin-top: 6px;
+            font-style: italic;
+            min-height: 1.2em;
+            font-weight: 500;
         }
 
         /* Settings Area (Returns) */
@@ -352,19 +362,19 @@
             display: flex;
             justify-content: center;
             flex-shrink: 0;
-            width: 220px;
+            width: 280px; /* Increased wrapper for larger chart */
         }
         .donut-chart {
-            width: 200px;
-            height: 200px;
+            width: 260px; /* Made bigger */
+            height: 260px; /* Made bigger */
             border-radius: 50%;
             position: relative;
             transition: background 0.3s ease; 
         }
 
         .donut-hole {
-            width: 140px;
-            height: 140px;
+            width: 190px; /* Made bigger */
+            height: 190px; /* Made bigger */
             background: var(--card-bg);
             border-radius: 50%;
             position: absolute;
@@ -380,7 +390,7 @@
         }
         
         .donut-total-label { font-size: 0.7rem; color: var(--text-sub); text-transform: uppercase; font-weight: 600; }
-        .donut-total-val { font-size: 1.1rem; font-weight: 800; color: var(--text-main); text-align: center; line-height: 1.2; margin-top: 4px; }
+        .donut-total-val { font-size: 1.0rem; font-weight: 800; color: var(--text-main); text-align: center; line-height: 1.2; margin-top: 4px; }
 
         /* Allocation List */
         .allocation-list { flex-grow: 1; width: 100%; }
@@ -454,11 +464,11 @@
         /* FONT SIZE SWAP & COLORS */
         .proj-item.highlight div { 
             color: #4ade80; 
-            font-size: 1.1rem; /* Made Smaller */
+            font-size: 1.0rem; /* Made Smaller */
         } 
         #valTotal { 
             color: #22c55e; 
-            font-size: 1.6rem; /* Made Bigger */
+            font-size: 1.4rem; /* Made Smaller */
         } 
         
         @media (max-width: 600px) {
@@ -630,7 +640,8 @@
                 <!-- LUMPSUM -->
                 <div class="input-group" id="grp-lumpsum">
                     <label>Lumpsum Amount (₹)</label>
-                    <input type="number" id="amountLumpsUm" Placeholder="e.g. 500000" value="0" oninput="generatePlan()">
+                    <input type="number" id="amountLumpsum" Placeholder="e.g. 500000" value="0" oninput="handleLumpsumChange()">
+                    <div id="lumpsumWords" class="word-display"></div>
                 </div>
 
                 <!-- SIP (Default 10000) -->
@@ -870,6 +881,54 @@
             generatePlan();
         }
 
+        function handleLumpsumChange() {
+            const val = parseFloat(document.getElementById('amountLumpsum').value) || 0;
+            document.getElementById('lumpsumWords').innerText = val > 0 ? priceToWords(val) : "";
+            generatePlan();
+        }
+
+        // Helper to convert number to Indian words
+        function priceToWords(n) {
+            if (n === 0) return "";
+            const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
+            const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+            const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+            const convertLessThanOneThousand = (num) => {
+                if (num === 0) return "";
+                if (num < 10) return units[num];
+                if (num < 20) return teens[num - 10];
+                if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? " " + units[num % 10] : "");
+                return units[Math.floor(num / 100)] + " Hundred" + (num % 100 !== 0 ? " " + convertLessThanOneThousand(num % 100) : "");
+            };
+
+            let result = "";
+            
+            // Crores
+            if (n >= 10000000) {
+                result += convertLessThanOneThousand(Math.floor(n / 10000000)) + " Crore ";
+                n %= 10000000;
+            }
+            
+            // Lakhs
+            if (n >= 100000) {
+                result += convertLessThanOneThousand(Math.floor(n / 100000)) + " Lakh ";
+                n %= 100000;
+            }
+
+            // Thousands
+            if (n >= 1000) {
+                result += convertLessThanOneThousand(Math.floor(n / 1000)) + " Thousand ";
+                n %= 1000;
+            }
+
+            if (n > 0) {
+                result += convertLessThanOneThousand(n);
+            }
+
+            return result.trim();
+        }
+
         function toggleInputs() {
             const mode = document.getElementById('invMode').value;
             const grpLump = document.getElementById('grp-lumpsum');
@@ -883,7 +942,7 @@
             } else {
                 grpLump.classList.remove('hidden'); grpSip.classList.remove('hidden'); grpStep.classList.remove('hidden');
             }
-            generatePlan();
+            handleLumpsumChange(); // Updates plan and words if mode switches
         }
 
         // --- CORE MATH: Pure Function for Single Stream ---
@@ -955,8 +1014,8 @@
 
             // Mappings
             const mapName = { "small": "Small Cap Fund", "mid": "Mid Cap Fund", "flexi": "Flexi Cap Fund", "large": "Large Cap Fund", "baf": "Balanced Advantage", "hybrid_cons": "Hybrid Conservative", "debt": "Debt Fund", "gold": "Gold / Intl" };
-            const mapColor = { "small": "var(--c-small)", "mid": "var(--c-mid)", "flexi": "var(--c-core)", "large": "var(--c-core)", "baf": "var(--c-hybrid)", "hybrid_cons": "var(--c-hybrid)", "gold": "var(--c-hybrid)", "debt": "var(--c-debt)" };
-            const mapClass = { "small": "c-small", "mid": "c-mid", "flexi": "c-core", "large": "c-core", "baf": "c-hybrid", "hybrid_cons": "c-hybrid", "gold": "c-hybrid", "debt": "c-debt" };
+            const mapColor = { "small": "var(--c-small)", "mid": "var(--c-mid)", "flexi": "var(--c-core)", "large": "var(--c-core)", "baf": "var(--c-hybrid)", "hybrid_cons": "var(--c-hybrid)", "debt": "var(--c-debt)", "gold": "var(--c-hybrid)" };
+            const mapClass = { "small": "c-small", "mid": "c-mid", "flexi": "c-core", "large": "c-core", "baf": "c-hybrid", "hybrid_cons": "c-hybrid", "debt": "c-debt", "gold": "c-hybrid" };
 
             // Update UI
             document.getElementById('welcomeState').style.display = 'none';
@@ -1100,3 +1159,5 @@
     </script>
 </body>
 </html>
+
+
