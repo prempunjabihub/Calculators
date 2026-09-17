@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Persevia SIP Calculator</title>
+    <title>MF SIP Calculator</title>
     <style>
         :root {
             /* Light Mode Variables */
@@ -616,7 +616,7 @@
             <!-- LEFT PANEL -->
             <div class="panel-left">
                 <div class="brand">
-                    <div>Persevia <span>FinSolutions</span></div>
+                    <div>MF <span>FinSolutions</span></div>
                 </div>
 
                 <div class="input-group">
@@ -808,15 +808,15 @@
             const body = document.body;
             if(body.getAttribute("data-theme") === "dark") {
                 body.removeAttribute("data-theme");
-                localStorage.setItem("persevia-theme", "light");
+                localStorage.setItem("MF-theme", "light");
             } else {
                 body.setAttribute("data-theme", "dark");
-                localStorage.setItem("persevia-theme", "dark");
+                localStorage.setItem("MF-theme", "dark");
             }
         }
         
         // Load saved theme
-        const savedTheme = localStorage.getItem("persevia-theme");
+        const savedTheme = localStorage.getItem("MF-theme");
         if(savedTheme === "dark") document.body.setAttribute("data-theme", "dark");
 
         // --- UI INITIALIZATION ---
