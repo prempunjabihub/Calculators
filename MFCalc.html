@@ -119,7 +119,7 @@
             }
             .panel-right {
                 padding: 25px 20px !important;
-                background: var(--card-bg) !important; /* Fix for dark mode */
+                background: var(--card-bg) !important;
             }
             .header-row {
                 flex-direction: column;
@@ -207,7 +207,35 @@
             outline: none;
         }
 
-        /* Utility Class - Fixed with !important */
+        /* Custom Switch Toggle */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.2);
+            transition: .4s;
+            border-radius: 20px;
+        }
+        .switch-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px; width: 14px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        .switch input:checked + .switch-slider { background-color: var(--accent); }
+        .switch input:checked + .switch-slider:before { transform: translateX(16px); }
+
+        /* Utility Class */
         .hidden { display: none !important; }
 
         /* Range Slider */
@@ -362,19 +390,19 @@
             display: flex;
             justify-content: center;
             flex-shrink: 0;
-            width: 280px; /* Increased wrapper for larger chart */
+            width: 280px;
         }
         .donut-chart {
-            width: 260px; /* Made bigger */
-            height: 260px; /* Made bigger */
+            width: 260px;
+            height: 260px;
             border-radius: 50%;
             position: relative;
             transition: background 0.3s ease; 
         }
 
         .donut-hole {
-            width: 190px; /* Made bigger */
-            height: 190px; /* Made bigger */
+            width: 190px;
+            height: 190px;
             background: var(--card-bg);
             border-radius: 50%;
             position: absolute;
@@ -428,7 +456,7 @@
         /* EXPANDABLE DETAILS */
         .alloc-details {
             display: none;
-            padding: 0 12px 12px 34px; /* Indent to align with text */
+            padding: 0 12px 12px 34px;
             font-size: 0.85rem;
             color: var(--text-sub);
             border-top: 1px dashed var(--border-color);
@@ -461,14 +489,13 @@
         .proj-item small { display: block; opacity: 0.7; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
         .proj-item div { font-size: 1.1rem; font-weight: 700; }
         
-        /* FONT SIZE SWAP & COLORS */
         .proj-item.highlight div { 
             color: #4ade80; 
-            font-size: 1.0rem; /* Made Smaller */
+            font-size: 1.0rem; 
         } 
         #valTotal { 
             color: #22c55e; 
-            font-size: 1.4rem; /* Made Smaller */
+            font-size: 1.4rem; 
         } 
         
         @media (max-width: 600px) {
@@ -537,7 +564,7 @@
         /* LOGIC EDITOR */
         .logic-container {
             width: 100%;
-            background: var(--border-color); /* Matches theme */
+            background: var(--border-color);
             border-radius: 16px;
             padding: 25px;
             box-sizing: border-box;
@@ -606,7 +633,7 @@
 
     </style>
 </head>
-<body onload="initLogicEditor(); toggleInputs(); generatePlan();">
+<body onload="initLogicEditor(); toggleInputs(); toggleOverrideInputs(); generatePlan();">
 
     <!-- THEME TOGGLE -->
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">🌓</button>
@@ -668,6 +695,22 @@
                     <div class="input-row">
                         <input type="range" id="yearsRange" min="1" max="40" value="20" oninput="syncInputs('yearsRange', 'yearsInput')">
                         <input type="number" id="yearsInput" value="20" oninput="syncInputs('yearsInput', 'yearsRange')">
+                    </div>
+                </div>
+
+                <!-- OVERRIDE ASSUMED RETURN TOGGLE -->
+                <div class="input-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="margin-bottom: 0;">Override Return Rate</label>
+                        <label class="switch">
+                            <input type="checkbox" id="overrideToggle" onchange="toggleOverrideInputs(); generatePlan();">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                    <!-- Override Rate Slider -->
+                    <div class="input-row hidden" id="grp-override-rate" style="margin-top: 10px;">
+                        <input type="range" id="rateRange" min="1" max="30" step="0.1" value="12" oninput="syncInputs('rateRange', 'rateInput')">
+                        <input type="number" id="rateInput" value="12" step="0.1" oninput="syncInputs('rateInput', 'rateRange')">
                     </div>
                 </div>
 
@@ -862,6 +905,16 @@
                 else el.style.display = "block";
             }
         }
+        
+        function toggleOverrideInputs() {
+            const isOverride = document.getElementById('overrideToggle').checked;
+            const rateRow = document.getElementById('grp-override-rate');
+            if (isOverride) {
+                rateRow.classList.remove('hidden');
+            } else {
+                rateRow.classList.add('hidden');
+            }
+        }
 
         function getRates() {
             return {
@@ -978,44 +1031,59 @@
             const mode = document.getElementById('invMode').value;
             const stepUp = parseFloat(document.getElementById('stepUpInput').value) || 0;
             
+            const isOverride = document.getElementById('overrideToggle').checked;
+            const overrideRate = parseFloat(document.getElementById('rateInput').value) || 12;
+
             let lumpAmt = (mode === 'lumpsum' || mode === 'both') ? parseFloat(document.getElementById('amountLumpsum').value) || 0 : 0;
             let sipAmt = (mode === 'sip' || mode === 'both') ? parseFloat(document.getElementById('amountSip').value) || 0 : 0;
 
             const currentRates = getRates();
 
-            // Logic Selection
             let selectedConfig = null;
             let warningShort = false;
             let isSmall = false;
 
-            if (years < 3) {
-                selectedConfig = STRATEGY_CONFIG.shortTerm;
-                warningShort = true;
+            // Logic Selection
+            if (isOverride) {
+                // If override is enabled, ignore logic and force a single custom configuration
+                selectedConfig = { 
+                    id: "customOverride", 
+                    label: "Manual Override", 
+                    type: "Custom Rate", 
+                    name: "Custom Assumed Return", 
+                    alloc: { custom: 100 } 
+                };
+                currentRates['custom'] = overrideRate; // Inject the custom rate dynamically
+                document.querySelectorAll('.logic-card').forEach(c => c.classList.remove('active-profile')); // Clear grid highlighting
             } else {
-                if (mode === 'lumpsum' && lumpAmt < 10000 && lumpAmt > 0) isSmall = true;
-                if (mode === 'sip' && sipAmt < 10000 && sipAmt > 0) isSmall = true;
-                if (mode === 'both' && lumpAmt < 10000 && sipAmt < 10000 && (lumpAmt > 0 || sipAmt > 0)) isSmall = true;
-
-                if (isSmall) {
-                    selectedConfig = age <= 40 ? STRATEGY_CONFIG.smallAmtYoung : STRATEGY_CONFIG.smallAmtOld;
+                if (years < 3) {
+                    selectedConfig = STRATEGY_CONFIG.shortTerm;
+                    warningShort = true;
                 } else {
-                    if (age <= 10) selectedConfig = STRATEGY_CONFIG.age0to10;
-                    else if (age <= 20) selectedConfig = STRATEGY_CONFIG.age10to20;
-                    else if (age <= 30) selectedConfig = STRATEGY_CONFIG.age20to30;
-                    else if (age <= 40) selectedConfig = STRATEGY_CONFIG.age30to40;
-                    else if (age <= 50) selectedConfig = STRATEGY_CONFIG.age40to50;
-                    else if (age <= 60) selectedConfig = STRATEGY_CONFIG.age50to60;
-                    else if (age <= 70) selectedConfig = STRATEGY_CONFIG.age60to70;
-                    else selectedConfig = STRATEGY_CONFIG.age70plus;
+                    if (mode === 'lumpsum' && lumpAmt < 10000 && lumpAmt > 0) isSmall = true;
+                    if (mode === 'sip' && sipAmt < 10000 && sipAmt > 0) isSmall = true;
+                    if (mode === 'both' && lumpAmt < 10000 && sipAmt < 10000 && (lumpAmt > 0 || sipAmt > 0)) isSmall = true;
+
+                    if (isSmall) {
+                        selectedConfig = age <= 40 ? STRATEGY_CONFIG.smallAmtYoung : STRATEGY_CONFIG.smallAmtOld;
+                    } else {
+                        if (age <= 10) selectedConfig = STRATEGY_CONFIG.age0to10;
+                        else if (age <= 20) selectedConfig = STRATEGY_CONFIG.age10to20;
+                        else if (age <= 30) selectedConfig = STRATEGY_CONFIG.age20to30;
+                        else if (age <= 40) selectedConfig = STRATEGY_CONFIG.age30to40;
+                        else if (age <= 50) selectedConfig = STRATEGY_CONFIG.age40to50;
+                        else if (age <= 60) selectedConfig = STRATEGY_CONFIG.age50to60;
+                        else if (age <= 70) selectedConfig = STRATEGY_CONFIG.age60to70;
+                        else selectedConfig = STRATEGY_CONFIG.age70plus;
+                    }
                 }
+                if (selectedConfig) highlightActiveStrategy(selectedConfig.id);
             }
 
-            if (selectedConfig) highlightActiveStrategy(selectedConfig.id);
-
-            // Mappings
-            const mapName = { "small": "Small Cap Fund", "mid": "Mid Cap Fund", "flexi": "Flexi Cap Fund", "large": "Large Cap Fund", "baf": "Balanced Advantage", "hybrid_cons": "Hybrid Conservative", "debt": "Debt Fund", "gold": "Gold / Intl" };
-            const mapColor = { "small": "var(--c-small)", "mid": "var(--c-mid)", "flexi": "var(--c-core)", "large": "var(--c-core)", "baf": "var(--c-hybrid)", "hybrid_cons": "var(--c-hybrid)", "debt": "var(--c-debt)", "gold": "var(--c-hybrid)" };
-            const mapClass = { "small": "c-small", "mid": "c-mid", "flexi": "c-core", "large": "c-core", "baf": "c-hybrid", "hybrid_cons": "c-hybrid", "debt": "c-debt", "gold": "c-hybrid" };
+            // Mappings (Includes the new 'custom' key for the override)
+            const mapName = { "small": "Small Cap Fund", "mid": "Mid Cap Fund", "flexi": "Flexi Cap Fund", "large": "Large Cap Fund", "baf": "Balanced Advantage", "hybrid_cons": "Hybrid Conservative", "debt": "Debt Fund", "gold": "Gold / Intl", "custom": "Custom Portfolio" };
+            const mapColor = { "small": "var(--c-small)", "mid": "var(--c-mid)", "flexi": "var(--c-core)", "large": "var(--c-core)", "baf": "var(--c-hybrid)", "hybrid_cons": "var(--c-hybrid)", "debt": "var(--c-debt)", "gold": "var(--c-hybrid)", "custom": "var(--accent)" };
+            const mapClass = { "small": "c-small", "mid": "c-mid", "flexi": "c-core", "large": "c-core", "baf": "c-hybrid", "hybrid_cons": "c-hybrid", "debt": "c-debt", "gold": "c-hybrid", "custom": "c-core" };
 
             // Update UI
             document.getElementById('welcomeState').style.display = 'none';
@@ -1024,8 +1092,9 @@
             
             document.getElementById('strategyTitle').innerText = selectedConfig.name;
             document.getElementById('strategyBadge').innerText = selectedConfig.type;
-            document.getElementById('warningBox').style.display = warningShort ? 'block' : 'none';
-            document.getElementById('focusedBox').style.display = (isSmall && !warningShort) ? 'block' : 'none';
+            
+            document.getElementById('warningBox').style.display = (warningShort && !isOverride) ? 'block' : 'none';
+            document.getElementById('focusedBox').style.display = (isSmall && !warningShort && !isOverride) ? 'block' : 'none';
 
             // Donut Center
             const donutCenter = document.getElementById('donutCenter');
@@ -1159,5 +1228,3 @@
     </script>
 </body>
 </html>
-
-
