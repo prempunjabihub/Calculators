@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MF SIP Calculator</title>
+    <title>MF SIP & SWP Calculator</title>
     <style>
         :root {
             /* Light Mode Variables */
-            --primary: #0f172a; /* Midnight Blue */
-            --accent: #3b82f6; /* Bright Blue */
+            --primary: #0f172a; 
+            --accent: #3b82f6; 
             --bg: #f1f5f9;
             --card-bg: #ffffff;
             --text-main: #1e293b;
@@ -105,43 +105,15 @@
 
         /* MOBILE & TABLET PORTRAIT (< 900px) */
         @media (max-width: 899px) {
-            body {
-                padding: 10px;
-                padding-bottom: 80px;
-            }
-            .dashboard {
-                display: flex;
-                flex-direction: column;
-                border-radius: 16px;
-            }
-            .panel-left {
-                padding: 25px 20px !important;
-            }
-            .panel-right {
-                padding: 25px 20px !important;
-                background: var(--card-bg) !important;
-            }
-            .header-row {
-                flex-direction: column;
-                gap: 5px;
-            }
-            .donut-wrapper {
-                width: 100% !important;
-                margin-bottom: 20px;
-            }
-            .donut-chart {
-                width: 220px !important;
-                height: 220px !important;
-            }
-            .donut-hole {
-                width: 150px !important;
-                height: 150px !important;
-                background: var(--card-bg) !important;
-            }
-            .theme-toggle {
-                top: 10px;
-                right: 10px;
-            }
+            body { padding: 10px; padding-bottom: 80px; }
+            .dashboard { display: flex; flex-direction: column; border-radius: 16px; }
+            .panel-left { padding: 25px 20px !important; }
+            .panel-right { padding: 25px 20px !important; background: var(--card-bg) !important; }
+            .header-row { flex-direction: column; gap: 5px; }
+            .donut-wrapper { width: 100% !important; margin-bottom: 20px; }
+            .donut-chart { width: 220px !important; height: 220px !important; }
+            .donut-hole { width: 150px !important; height: 150px !important; background: var(--card-bg) !important; }
+            .theme-toggle { top: 10px; right: 10px; }
         }
 
         /* LEFT PANEL: Inputs */
@@ -154,10 +126,7 @@
             justify-content: flex-start;
         }
 
-        .brand {
-            margin-bottom: 30px;
-            flex-shrink: 0;
-        }
+        .brand { margin-bottom: 30px; flex-shrink: 0; }
         .brand div { font-size: 1.5rem; font-weight: 700; line-height: 1.2; }
         .brand span { color: var(--accent); }
 
@@ -173,11 +142,7 @@
             letter-spacing: 0.5px;
         }
 
-        .input-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+        .input-row { display: flex; align-items: center; gap: 10px; }
 
         /* Number Inputs */
         input[type="number"], select {
@@ -194,448 +159,141 @@
         
         select option { background: var(--primary); color: white; }
 
-        /* Specific width for inputs next to sliders */
-        .input-row input[type="number"] {
-            width: 80px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        input[type="number"]:focus, select:focus {
-            background: rgba(255,255,255,0.15);
-            border-color: var(--accent);
-            outline: none;
-        }
+        .input-row input[type="number"] { width: 80px; text-align: center; flex-shrink: 0; }
+        input[type="number"]:focus, select:focus { background: rgba(255,255,255,0.15); border-color: var(--accent); outline: none; }
 
         /* Custom Switch Toggle */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 36px;
-            height: 20px;
-        }
+        .switch { position: relative; display: inline-block; width: 36px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .switch-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255,255,255,0.2);
-            transition: .4s;
-            border-radius: 20px;
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255,255,255,0.2); transition: .4s; border-radius: 20px;
         }
         .switch-slider:before {
-            position: absolute;
-            content: "";
-            height: 14px; width: 14px;
-            left: 3px; bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+            position: absolute; content: ""; height: 14px; width: 14px;
+            left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%;
         }
         .switch input:checked + .switch-slider { background-color: var(--accent); }
         .switch input:checked + .switch-slider:before { transform: translateX(16px); }
 
-        /* Utility Class */
         .hidden { display: none !important; }
 
         /* Range Slider */
         input[type="range"] {
-            width: 100%;
-            accent-color: var(--accent);
-            cursor: pointer;
-            height: 4px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-            appearance: none;
+            width: 100%; accent-color: var(--accent); cursor: pointer; height: 4px;
+            background: rgba(255,255,255,0.2); border-radius: 2px; appearance: none;
         }
-        
         input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 20px;
-            width: 20px;
-            border-radius: 50%;
-            background: var(--accent);
-            cursor: pointer;
-            margin-top: -8px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+            background: var(--accent); cursor: pointer; margin-top: -8px; box-shadow: 0 0 5px rgba(0,0,0,0.3);
         }
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 2px; }
         
-        input[type="range"]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: rgba(255,255,255,0.2);
-            border-radius: 2px;
-        }
-        
-        /* HELPER TEXT FOR WORDS */
-        .word-display {
-            font-size: 0.8rem;
-            color: #4ade80; /* Greenish */
-            margin-top: 6px;
-            font-style: italic;
-            min-height: 1.2em;
-            font-weight: 500;
-        }
+        .word-display { font-size: 0.8rem; color: #4ade80; margin-top: 6px; font-style: italic; min-height: 1.2em; font-weight: 500; }
 
         /* Settings Area (Returns) */
         .settings-toggle {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 0.85rem;
-            cursor: pointer;
-            text-decoration: underline;
-            padding: 0;
-            margin-bottom: 15px;
-            text-align: left;
-            display: inline-block;
+            background: none; border: none; color: #94a3b8; font-size: 0.85rem;
+            cursor: pointer; text-decoration: underline; padding: 0; margin-bottom: 15px; text-align: left; display: inline-block;
         }
         .settings-toggle:hover { color: var(--accent); }
-
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; }
         .settings-item label { font-size: 0.7rem; margin-bottom: 4px; color: #cbd5e1; }
         .settings-item input { padding: 8px; font-size: 0.9rem; text-align: right; }
 
-
         /* RIGHT PANEL: Results */
-        .panel-right {
-            padding: 40px;
-            background: var(--card-bg);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            transition: background-color 0.3s;
-        }
-
-        .welcome-state {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-sub);
-            text-align: center;
-            min-height: 200px;
-        }
-
+        .panel-right { padding: 40px; background: var(--card-bg); position: relative; display: flex; flex-direction: column; transition: background-color 0.3s; }
+        .welcome-state { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: var(--text-sub); text-align: center; min-height: 200px; }
         .results-content { display: none; width: 100%; }
-
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 25px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 20px;
-        }
-
-        .strategy-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent);
-            margin-bottom: 6px;
-        }
-        
-        .strategy-title {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: var(--text-main);
-            margin: 0;
-        }
+        .header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        .strategy-badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: rgba(59, 130, 246, 0.1); color: var(--accent); margin-bottom: 6px; }
+        .strategy-title { font-size: 1.6rem; font-weight: 800; color: var(--text-main); margin: 0; }
 
         /* Warnings */
-        .warning-box {
-            background: rgba(252, 211, 77, 0.1);
-            border: 1px solid rgba(252, 211, 77, 0.5);
-            color: #d97706; /* Darker orange for readability */
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        /* Dark mode adjustment for warning text */
+        .warning-box { background: rgba(252, 211, 77, 0.1); border: 1px solid rgba(252, 211, 77, 0.5); color: #d97706; padding: 12px; border-radius: 8px; font-size: 0.9rem; margin-bottom: 20px; display: none; }
         [data-theme="dark"] .warning-box { color: #fbbf24; }
 
         /* Chart & List Layout */
-        .viz-container {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-        
-        @media (min-width: 900px) {
-            .viz-container {
-                flex-direction: row;
-                align-items: flex-start;
-            }
-        }
+        .viz-container { display: flex; flex-direction: column; gap: 30px; }
+        @media (min-width: 900px) { .viz-container { flex-direction: row; align-items: flex-start; } }
 
         /* Donut Chart */
-        .donut-wrapper {
-            display: flex;
-            justify-content: center;
-            flex-shrink: 0;
-            width: 280px;
-        }
-        .donut-chart {
-            width: 260px;
-            height: 260px;
-            border-radius: 50%;
-            position: relative;
-            transition: background 0.3s ease; 
-        }
-
-        .donut-hole {
-            width: 190px;
-            height: 190px;
-            background: var(--card-bg);
-            border-radius: 50%;
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.05);
-            z-index: 2;
-            transition: background-color 0.3s;
-        }
-        
+        .donut-wrapper { display: flex; justify-content: center; flex-shrink: 0; width: 280px; }
+        .donut-chart { width: 260px; height: 260px; border-radius: 50%; position: relative; transition: background 0.3s ease;  }
+        .donut-hole { width: 190px; height: 190px; background: var(--card-bg); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; flex-direction: column; box-shadow: inset 0 0 15px rgba(0,0,0,0.05); z-index: 2; transition: background-color 0.3s; }
         .donut-total-label { font-size: 0.7rem; color: var(--text-sub); text-transform: uppercase; font-weight: 600; }
         .donut-total-val { font-size: 1.0rem; font-weight: 800; color: var(--text-main); text-align: center; line-height: 1.2; margin-top: 4px; }
 
         /* Allocation List */
         .allocation-list { flex-grow: 1; width: 100%; }
-
-        .alloc-item {
-            margin-bottom: 10px;
-            background: rgba(0,0,0,0.02);
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            cursor: pointer;
-            overflow: hidden;
-            transition: background 0.2s;
-        }
-        
+        .alloc-item { margin-bottom: 10px; background: rgba(0,0,0,0.02); border-radius: 10px; border: 1px solid var(--border-color); cursor: pointer; overflow: hidden; transition: background 0.2s; }
         .alloc-item:hover { background: rgba(0,0,0,0.04); }
-        
-        .alloc-header-flex {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-        }
-        
-        .color-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-
+        .alloc-header-flex { display: flex; align-items: center; padding: 12px; }
+        .color-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; }
         .alloc-info { flex-grow: 1; }
         .alloc-name { font-weight: 600; font-size: 0.9rem; display: block; color: var(--text-main); }
         .alloc-amt { font-size: 0.8rem; color: var(--text-sub); }
         .alloc-pct { font-weight: 700; font-size: 1rem; color: var(--text-main); }
         
-        /* EXPANDABLE DETAILS */
-        .alloc-details {
-            display: none;
-            padding: 0 12px 12px 34px;
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            border-top: 1px dashed var(--border-color);
-            margin-top: 5px;
-            padding-top: 10px;
-        }
-        
-        .details-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 5px;
-        }
+        .alloc-details { display: none; padding: 0 12px 12px 34px; font-size: 0.85rem; color: var(--text-sub); border-top: 1px dashed var(--border-color); margin-top: 5px; padding-top: 10px; }
+        .details-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; }
         .dg-item small { display: block; font-size: 0.7rem; opacity: 0.7; }
         .dg-item div { font-weight: 600; color: var(--text-main); }
         .dg-highlight { color: #4ade80 !important; }
 
-        /* PROJECTION CARD */
-        .projection-card {
-            margin-top: 30px;
-            background: var(--panel-left-bg);
-            color: white;
-            border-radius: 16px;
-            padding: 20px 25px;
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            text-align: center;
-        }
+        /* PROJECTION CARDS */
+        .projection-card { margin-top: 30px; background: var(--panel-left-bg); color: white; border-radius: 16px; padding: 20px 25px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center; }
+        .swp-card { background: rgba(59, 130, 246, 0.05); color: var(--text-main); border: 1px solid rgba(59, 130, 246, 0.2); }
+        [data-theme="dark"] .swp-card { background: rgba(59, 130, 246, 0.1); color: white; }
 
         .proj-item small { display: block; opacity: 0.7; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 5px; }
         .proj-item div { font-size: 1.1rem; font-weight: 700; }
-        
-        .proj-item.highlight div { 
-            color: #4ade80; 
-            font-size: 1.0rem; 
-        } 
-        #valTotal { 
-            color: #22c55e; 
-            font-size: 1.4rem; 
-        } 
+        .proj-item.highlight div { color: #4ade80; font-size: 1.0rem; } 
+        #valTotal, #swpGrandTotal { color: #22c55e; font-size: 1.4rem; } 
         
         @media (max-width: 600px) {
             .projection-card { grid-template-columns: 1fr; text-align: left; }
             .proj-item { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 10px; }
+            .swp-card .proj-item { border-bottom: 1px solid rgba(59, 130, 246, 0.2); }
             .proj-item:last-child { border: none; margin: 0; padding: 0; }
         }
 
         /* SPLIT BAR */
-        .split-bar-container {
-            margin-top: 20px;
-        }
-        .split-bar {
-            display: flex;
-            height: 14px;
-            width: 100%;
-            background: #e2e8f0;
-            border-radius: 7px;
-            overflow: hidden;
-        }
+        .split-bar-container { margin-top: 20px; }
+        .split-bar { display: flex; height: 14px; width: 100%; background: #e2e8f0; border-radius: 7px; overflow: hidden; }
         [data-theme="dark"] .split-bar { background: #334155; }
-        
-        .sb-segment {
-            height: 100%;
-            transition: width 0.5s ease;
-        }
+        .sb-segment { height: 100%; transition: width 0.5s ease; }
         .sb-invested { background-color: var(--accent); } 
         .sb-returns { background-color: #4ade80; } 
         
-        .sb-legend {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            font-size: 0.75rem;
-            color: var(--text-sub);
-            font-weight: 500;
-        }
+        .sb-legend { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.75rem; color: var(--text-sub); font-weight: 500; }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .dot-invested { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
         .dot-returns { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; }
 
-
         /* MOBILE STICKY SUMMARY BAR */
-        .mobile-sticky-bar {
-            display: none;
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: var(--primary);
-            color: white;
-            padding: 15px 20px;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
-            cursor: pointer;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-        @media (max-width: 899px) {
-            body.results-active .mobile-sticky-bar { display: flex; }
-        }
-        
+        .mobile-sticky-bar { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: var(--primary); color: white; padding: 15px 20px; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 -5px 20px rgba(0,0,0,0.2); cursor: pointer; border-top: 1px solid rgba(255,255,255,0.1); }
+        @media (max-width: 899px) { body.results-active .mobile-sticky-bar { display: flex; } }
         .ms-label { font-size: 0.8rem; opacity: 0.8; text-transform: uppercase; }
         .ms-val { font-size: 1.2rem; font-weight: 700; color: #4ade80; }
         .ms-icon { font-size: 0.9rem; background: rgba(255,255,255,0.15); padding: 5px 12px; border-radius: 15px; }
 
         /* LOGIC EDITOR */
-        .logic-container {
-            width: 100%;
-            background: var(--border-color);
-            border-radius: 16px;
-            padding: 25px;
-            box-sizing: border-box;
-            color: var(--text-main);
-        }
-
-        .logic-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            cursor: pointer;
-            user-select: none;
-        }
-
+        .logic-container { width: 100%; background: var(--border-color); border-radius: 16px; padding: 25px; box-sizing: border-box; color: var(--text-main); }
+        .logic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; cursor: pointer; user-select: none; }
         .logic-title { font-weight: 700; color: var(--text-sub); font-size: 1.1rem; }
-        
-        .logic-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
-        }
-
-        .logic-card {
-            background: var(--card-bg);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .logic-card-header {
-            font-weight: 600;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .logic-card.active-profile {
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
-        }
-        
+        .logic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .logic-card { background: var(--card-bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .logic-card-header { font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; }
+        .logic-card.active-profile { border: 2px solid var(--accent); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
         .logic-card.active-profile .logic-card-header { color: var(--accent); }
-
-        .alloc-input-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 5px;
-            font-size: 0.85rem;
-        }
-        
+        .alloc-input-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 0.85rem; }
         .alloc-input-row label { margin: 0; color: var(--text-sub); font-weight: 400; }
-        .alloc-input-row input {
-            width: 50px;
-            padding: 4px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            text-align: center;
-            color: var(--text-main);
-            background: var(--bg);
-        }
-
+        .alloc-input-row input { width: 50px; padding: 4px; border: 1px solid var(--border-color); border-radius: 4px; text-align: center; color: var(--text-main); background: var(--bg); }
     </style>
 </head>
-<body onload="initLogicEditor(); toggleInputs(); toggleOverrideInputs(); generatePlan();">
+<body onload="initLogicEditor(); toggleInputs(); toggleOverrideInputs(); toggleSWPInputs(); generatePlan();">
 
-    <!-- THEME TOGGLE -->
     <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">🌓</button>
 
     <div class="dashboard-wrapper">
@@ -655,7 +313,6 @@
                     </select>
                 </div>
 
-                <!-- AGE (Default 25) -->
                 <div class="input-group">
                     <label>Client Age</label>
                     <div class="input-row">
@@ -664,14 +321,12 @@
                     </div>
                 </div>
 
-                <!-- LUMPSUM -->
                 <div class="input-group" id="grp-lumpsum">
                     <label>Lumpsum Amount (₹)</label>
                     <input type="number" id="amountLumpsum" Placeholder="e.g. 500000" value="0" oninput="handleLumpsumChange()">
                     <div id="lumpsumWords" class="word-display"></div>
                 </div>
 
-                <!-- SIP (Default 10000) -->
                 <div class="input-group" id="grp-sip">
                     <label>Monthly SIP (₹)</label>
                     <div class="input-row">
@@ -680,7 +335,6 @@
                     </div>
                 </div>
                 
-                <!-- STEP UP (Default 10) -->
                 <div class="input-group" id="grp-stepup">
                     <label>Annual Step-Up (%)</label>
                     <div class="input-row">
@@ -689,9 +343,8 @@
                     </div>
                 </div>
 
-                <!-- TIME HORIZON (Default 20) -->
                 <div class="input-group">
-                    <label>Time Horizon (Years)</label>
+                    <label>Accumulation Phase (Years)</label>
                     <div class="input-row">
                         <input type="range" id="yearsRange" min="1" max="40" value="20" oninput="syncInputs('yearsRange', 'yearsInput')">
                         <input type="number" id="yearsInput" value="20" oninput="syncInputs('yearsInput', 'yearsRange')">
@@ -701,22 +354,51 @@
                 <!-- OVERRIDE ASSUMED RETURN TOGGLE -->
                 <div class="input-group">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <label style="margin-bottom: 0;">Override Return Rate</label>
+                        <label style="margin-bottom: 0; color: #94a3b8;">Override Return Rate</label>
                         <label class="switch">
                             <input type="checkbox" id="overrideToggle" onchange="toggleOverrideInputs(); generatePlan();">
                             <span class="switch-slider"></span>
                         </label>
                     </div>
-                    <!-- Override Rate Slider -->
                     <div class="input-row hidden" id="grp-override-rate" style="margin-top: 10px;">
                         <input type="range" id="rateRange" min="1" max="30" step="0.1" value="12" oninput="syncInputs('rateRange', 'rateInput')">
                         <input type="number" id="rateInput" value="12" step="0.1" oninput="syncInputs('rateInput', 'rateRange')">
                     </div>
                 </div>
+                
+                <!-- SWP PHASE TOGGLE & SETTINGS -->
+                <div class="input-group" style="background: rgba(59, 130, 246, 0.1); padding: 15px; border-radius: 12px; border: 1px solid rgba(59, 130, 246, 0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="margin-bottom: 0; color: #fff;">Plan SWP (Withdrawal)</label>
+                        <label class="switch">
+                            <input type="checkbox" id="swpToggle" onchange="toggleSWPInputs(); generatePlan();">
+                            <span class="switch-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div id="grp-swp-settings" class="hidden" style="margin-top: 15px;">
+                        <label>SWP Duration (Years)</label>
+                        <div class="input-row" style="margin-bottom:15px;">
+                            <input type="range" id="swpYearsRange" min="1" max="40" value="10" oninput="syncInputs('swpYearsRange', 'swpYearsInput')">
+                            <input type="number" id="swpYearsInput" value="10" oninput="syncInputs('swpYearsInput', 'swpYearsRange')">
+                        </div>
+                        
+                        <label>Withdrawal Type</label>
+                        <select id="swpType" onchange="toggleSWPMode(); generatePlan();" style="margin-bottom:15px; background: rgba(0,0,0,0.3);">
+                            <option value="fixed">Fixed Monthly Amount (₹)</option>
+                            <option value="percent">Annual % of Starting AUM</option>
+                        </select>
+
+                        <label id="swpValueLabel">Monthly Withdrawal (₹)</label>
+                        <div class="input-row">
+                            <input type="number" id="swpValueFixed" value="50000" step="1000" oninput="generatePlan()" style="width:100%; background: rgba(0,0,0,0.3);">
+                            <input type="number" id="swpValuePercent" value="6" step="0.5" oninput="generatePlan()" class="hidden" style="width:100%; background: rgba(0,0,0,0.3);">
+                        </div>
+                    </div>
+                </div>
 
                 <!-- SETTINGS TOGGLE -->
                 <button class="settings-toggle" onclick="toggleSettings()">Edit Return Assumptions ⚙️</button>
-                
                 <div id="settingsArea" class="hidden">
                     <div class="settings-grid">
                         <div class="settings-item"><label>Small Cap %</label><input type="number" id="r_small" value="15" oninput="generatePlan()"></div>
@@ -772,7 +454,7 @@
                         </div>
                     </div>
 
-                    <!-- Wealth Projector -->
+                    <!-- Wealth Accumulation Projector -->
                     <div class="projection-card">
                         <div class="proj-item">
                             <small>Total Invested</small>
@@ -783,13 +465,13 @@
                             <div id="valReturns">₹0</div>
                         </div>
                         <div class="proj-item">
-                            <small>Total Value</small>
+                            <small id="lblTotalValue">Total Value</small>
                             <div id="valTotal">₹0</div>
                         </div>
                     </div>
 
                     <!-- Split Bar -->
-                    <div class="split-bar-container">
+                    <div class="split-bar-container" id="accumSplitBar">
                         <div class="split-bar">
                             <div id="barInvested" class="sb-segment sb-invested"></div>
                             <div id="barReturns" class="sb-segment sb-returns"></div>
@@ -800,8 +482,32 @@
                         </div>
                     </div>
 
-                </div>
+                    <!-- SWP Results Projector -->
+                    <div id="swpCard" class="projection-card swp-card hidden">
+                        <div class="proj-item">
+                            <small>Installments</small>
+                            <div id="swpInstallments" style="font-size: 1rem;">0 / 0</div>
+                        </div>
+                        <div class="proj-item highlight">
+                            <small>Total Withdrawn</small>
+                            <div id="swpWithdrawn">₹0</div>
+                        </div>
+                        <div class="proj-item">
+                            <small>Remaining AUM</small>
+                            <div id="swpRemaining">₹0</div>
+                        </div>
+                        
+                        <!-- Spans full width on Desktop, handled via flex on mobile -->
+                        <div class="proj-item" style="grid-column: 1 / -1; margin-top: 5px; border-top: 1px dashed rgba(148, 163, 184, 0.4); padding-top: 15px;">
+                            <small>Grand Total (Withdrawn + Remaining)</small>
+                            <div id="swpGrandTotal">₹0</div>
+                            <div id="swpDepletedWarning" style="color: #ef4444; font-size: 0.85rem; margin-top: 8px; font-weight: 600; display: none;">
+                                ⚠️ Corpus depleted completely at month <span id="swpDepletedMonth"></span>.
+                            </div>
+                        </div>
+                    </div>
 
+                </div>
             </div>
         </div>
 
@@ -818,7 +524,7 @@
     <!-- STICKY FOOTER -->
     <div id="mobileSummary" class="mobile-sticky-bar" onclick="scrollToResults()">
         <div>
-            <div class="ms-label">Projected Value</div>
+            <div class="ms-label" id="mobLabel">Projected Value</div>
             <div class="ms-val" id="mobValTotal">₹0</div>
         </div>
         <div class="ms-icon">See Details ⬇</div>
@@ -858,7 +564,6 @@
             }
         }
         
-        // Load saved theme
         const savedTheme = localStorage.getItem("MF-theme");
         if(savedTheme === "dark") document.body.setAttribute("data-theme", "dark");
 
@@ -897,22 +602,45 @@
         function scrollToResults() { document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth' }); }
         function toggleSettings() { document.getElementById('settingsArea').classList.toggle('hidden'); }
         
-        // Toggle specific fund details
         function toggleFundDetail(id) {
             const el = document.getElementById(id);
-            if(el) {
-                if(el.style.display === "block") el.style.display = "none";
-                else el.style.display = "block";
-            }
+            if(el) { el.style.display = (el.style.display === "block") ? "none" : "block"; }
         }
         
         function toggleOverrideInputs() {
             const isOverride = document.getElementById('overrideToggle').checked;
             const rateRow = document.getElementById('grp-override-rate');
-            if (isOverride) {
-                rateRow.classList.remove('hidden');
+            if (isOverride) rateRow.classList.remove('hidden');
+            else rateRow.classList.add('hidden');
+        }
+
+        function toggleSWPInputs() {
+            const isSWP = document.getElementById('swpToggle').checked;
+            const grp = document.getElementById('grp-swp-settings');
+            const swpCard = document.getElementById('swpCard');
+            if(isSWP) {
+                grp.classList.remove('hidden');
+                swpCard.classList.remove('hidden');
             } else {
-                rateRow.classList.add('hidden');
+                grp.classList.add('hidden');
+                swpCard.classList.add('hidden');
+            }
+        }
+
+        function toggleSWPMode() {
+            const type = document.getElementById('swpType').value;
+            const lbl = document.getElementById('swpValueLabel');
+            const inpFixed = document.getElementById('swpValueFixed');
+            const inpPct = document.getElementById('swpValuePercent');
+            
+            if (type === 'fixed') {
+                lbl.innerText = "Monthly Withdrawal (₹)";
+                inpFixed.classList.remove('hidden');
+                inpPct.classList.add('hidden');
+            } else {
+                lbl.innerText = "Annual Withdrawal (% of AUM)";
+                inpFixed.classList.add('hidden');
+                inpPct.classList.remove('hidden');
             }
         }
 
@@ -940,13 +668,11 @@
             generatePlan();
         }
 
-        // Helper to convert number to Indian words
         function priceToWords(n) {
             if (n === 0) return "";
             const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
             const teens = ["Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
             const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
-
             const convertLessThanOneThousand = (num) => {
                 if (num === 0) return "";
                 if (num < 10) return units[num];
@@ -954,31 +680,11 @@
                 if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? " " + units[num % 10] : "");
                 return units[Math.floor(num / 100)] + " Hundred" + (num % 100 !== 0 ? " " + convertLessThanOneThousand(num % 100) : "");
             };
-
             let result = "";
-            
-            // Crores
-            if (n >= 10000000) {
-                result += convertLessThanOneThousand(Math.floor(n / 10000000)) + " Crore ";
-                n %= 10000000;
-            }
-            
-            // Lakhs
-            if (n >= 100000) {
-                result += convertLessThanOneThousand(Math.floor(n / 100000)) + " Lakh ";
-                n %= 100000;
-            }
-
-            // Thousands
-            if (n >= 1000) {
-                result += convertLessThanOneThousand(Math.floor(n / 1000)) + " Thousand ";
-                n %= 1000;
-            }
-
-            if (n > 0) {
-                result += convertLessThanOneThousand(n);
-            }
-
+            if (n >= 10000000) { result += convertLessThanOneThousand(Math.floor(n / 10000000)) + " Crore "; n %= 10000000; }
+            if (n >= 100000) { result += convertLessThanOneThousand(Math.floor(n / 100000)) + " Lakh "; n %= 100000; }
+            if (n >= 1000) { result += convertLessThanOneThousand(Math.floor(n / 1000)) + " Thousand "; n %= 1000; }
+            if (n > 0) { result += convertLessThanOneThousand(n); }
             return result.trim();
         }
 
@@ -987,39 +693,29 @@
             const grpLump = document.getElementById('grp-lumpsum');
             const grpSip = document.getElementById('grp-sip');
             const grpStep = document.getElementById('grp-stepup');
-
-            if (mode === 'lumpsum') {
-                grpLump.classList.remove('hidden'); grpSip.classList.add('hidden'); grpStep.classList.add('hidden');
-            } else if (mode === 'sip') {
-                grpLump.classList.add('hidden'); grpSip.classList.remove('hidden'); grpStep.classList.remove('hidden');
-            } else {
-                grpLump.classList.remove('hidden'); grpSip.classList.remove('hidden'); grpStep.classList.remove('hidden');
-            }
-            handleLumpsumChange(); // Updates plan and words if mode switches
+            if (mode === 'lumpsum') { grpLump.classList.remove('hidden'); grpSip.classList.add('hidden'); grpStep.classList.add('hidden'); } 
+            else if (mode === 'sip') { grpLump.classList.add('hidden'); grpSip.classList.remove('hidden'); grpStep.classList.remove('hidden'); } 
+            else { grpLump.classList.remove('hidden'); grpSip.classList.remove('hidden'); grpStep.classList.remove('hidden'); }
+            handleLumpsumChange(); 
         }
 
-        // --- CORE MATH: Pure Function for Single Stream ---
+        // --- CORE MATH ---
         function calculateStreamFV(principal, type, years, rate, stepUp) {
-            // Rate is annual % 
             const annualRate = rate / 100;
             const monthlyRate = annualRate / 12;
             const totalMonths = years * 12;
-            let fv = 0;
-            let invested = 0;
+            let fv = 0; let invested = 0;
 
             if (type === 'lumpsum') {
                 invested = principal;
                 fv = principal * Math.pow((1 + annualRate), years);
             } else {
-                // SIP with Step Up
                 let currentSip = principal;
                 for (let m = 1; m <= totalMonths; m++) {
                     fv += currentSip;
                     invested += currentSip;
                     fv = fv * (1 + monthlyRate);
-                    if (m % 12 === 0 && stepUp > 0) {
-                        currentSip = currentSip * (1 + (stepUp / 100));
-                    }
+                    if (m % 12 === 0 && stepUp > 0) currentSip = currentSip * (1 + (stepUp / 100));
                 }
             }
             return { invested, value: fv, profit: fv - invested };
@@ -1034,27 +730,20 @@
             const isOverride = document.getElementById('overrideToggle').checked;
             const overrideRate = parseFloat(document.getElementById('rateInput').value) || 12;
 
+            const isSWP = document.getElementById('swpToggle').checked;
+
             let lumpAmt = (mode === 'lumpsum' || mode === 'both') ? parseFloat(document.getElementById('amountLumpsum').value) || 0 : 0;
             let sipAmt = (mode === 'sip' || mode === 'both') ? parseFloat(document.getElementById('amountSip').value) || 0 : 0;
 
             const currentRates = getRates();
-
             let selectedConfig = null;
             let warningShort = false;
             let isSmall = false;
 
-            // Logic Selection
             if (isOverride) {
-                // If override is enabled, ignore logic and force a single custom configuration
-                selectedConfig = { 
-                    id: "customOverride", 
-                    label: "Manual Override", 
-                    type: "Custom Rate", 
-                    name: "Custom Assumed Return", 
-                    alloc: { custom: 100 } 
-                };
-                currentRates['custom'] = overrideRate; // Inject the custom rate dynamically
-                document.querySelectorAll('.logic-card').forEach(c => c.classList.remove('active-profile')); // Clear grid highlighting
+                selectedConfig = { id: "customOverride", label: "Manual Override", type: "Custom Rate", name: "Custom Assumed Return", alloc: { custom: 100 } };
+                currentRates['custom'] = overrideRate; 
+                document.querySelectorAll('.logic-card').forEach(c => c.classList.remove('active-profile')); 
             } else {
                 if (years < 3) {
                     selectedConfig = STRATEGY_CONFIG.shortTerm;
@@ -1064,9 +753,8 @@
                     if (mode === 'sip' && sipAmt < 10000 && sipAmt > 0) isSmall = true;
                     if (mode === 'both' && lumpAmt < 10000 && sipAmt < 10000 && (lumpAmt > 0 || sipAmt > 0)) isSmall = true;
 
-                    if (isSmall) {
-                        selectedConfig = age <= 40 ? STRATEGY_CONFIG.smallAmtYoung : STRATEGY_CONFIG.smallAmtOld;
-                    } else {
+                    if (isSmall) selectedConfig = age <= 40 ? STRATEGY_CONFIG.smallAmtYoung : STRATEGY_CONFIG.smallAmtOld;
+                    else {
                         if (age <= 10) selectedConfig = STRATEGY_CONFIG.age0to10;
                         else if (age <= 20) selectedConfig = STRATEGY_CONFIG.age10to20;
                         else if (age <= 30) selectedConfig = STRATEGY_CONFIG.age20to30;
@@ -1080,35 +768,32 @@
                 if (selectedConfig) highlightActiveStrategy(selectedConfig.id);
             }
 
-            // Mappings (Includes the new 'custom' key for the override)
             const mapName = { "small": "Small Cap Fund", "mid": "Mid Cap Fund", "flexi": "Flexi Cap Fund", "large": "Large Cap Fund", "baf": "Balanced Advantage", "hybrid_cons": "Hybrid Conservative", "debt": "Debt Fund", "gold": "Gold / Intl", "custom": "Custom Portfolio" };
             const mapColor = { "small": "var(--c-small)", "mid": "var(--c-mid)", "flexi": "var(--c-core)", "large": "var(--c-core)", "baf": "var(--c-hybrid)", "hybrid_cons": "var(--c-hybrid)", "debt": "var(--c-debt)", "gold": "var(--c-hybrid)", "custom": "var(--accent)" };
             const mapClass = { "small": "c-small", "mid": "c-mid", "flexi": "c-core", "large": "c-core", "baf": "c-hybrid", "hybrid_cons": "c-hybrid", "debt": "c-debt", "gold": "c-hybrid", "custom": "c-core" };
 
-            // Update UI
             document.getElementById('welcomeState').style.display = 'none';
             document.getElementById('resultsContent').style.display = 'block';
             document.body.classList.add('results-active');
             
             document.getElementById('strategyTitle').innerText = selectedConfig.name;
             document.getElementById('strategyBadge').innerText = selectedConfig.type;
-            
             document.getElementById('warningBox').style.display = (warningShort && !isOverride) ? 'block' : 'none';
             document.getElementById('focusedBox').style.display = (isSmall && !warningShort && !isOverride) ? 'block' : 'none';
 
-            // Donut Center
             const donutCenter = document.getElementById('donutCenter');
             if (mode === 'lumpsum') donutCenter.innerText = formatMoney(lumpAmt);
             else if (mode === 'sip') donutCenter.innerText = formatMoney(sipAmt) + "/mo";
             else donutCenter.innerHTML = "Mix";
 
-            // CALCULATE INDIVIDUAL FUND DETAILS
             const listContainer = document.getElementById('allocList');
             listContainer.innerHTML = '';
             
             let portfolio = [];
             let totalInvested = 0;
             let totalValue = 0;
+            
+            let sumWeightedRate = 0; // For SWP
 
             for (const key in selectedConfig.alloc) {
                 const pct = selectedConfig.alloc[key];
@@ -1116,11 +801,9 @@
                     const decimalPct = pct / 100;
                     const fundRate = currentRates[key];
                     
-                    // Calc Lumpsum Portion
                     const myLump = lumpAmt * decimalPct;
                     const resLump = calculateStreamFV(myLump, 'lumpsum', years, fundRate, 0);
                     
-                    // Calc SIP Portion
                     const mySip = sipAmt * decimalPct;
                     const resSip = calculateStreamFV(mySip, 'sip', years, fundRate, stepUp);
                     
@@ -1130,22 +813,15 @@
 
                     totalInvested += fundInvested;
                     totalValue += fundValue;
+                    sumWeightedRate += (fundValue * fundRate);
 
                     portfolio.push({
-                        name: mapName[key],
-                        pct: decimalPct,
-                        color: mapColor[key],
-                        class: mapClass[key],
-                        rate: fundRate,
-                        // Detail Data
-                        dInvested: fundInvested,
-                        dValue: fundValue,
-                        dProfit: fundProfit
+                        name: mapName[key], pct: decimalPct, color: mapColor[key], class: mapClass[key],
+                        rate: fundRate, dInvested: fundInvested, dValue: fundValue, dProfit: fundProfit
                     });
                 }
             }
 
-            // Render List with Details
             portfolio.forEach((item, index) => {
                 const percent = Math.round(item.pct * 100);
                 let displayAmt = "";
@@ -1158,10 +834,7 @@
                         <div class="alloc-header-flex">
                             <div class="color-dot ${item.class}"></div>
                             <div class="alloc-info">
-                                <span class="alloc-name">
-                                    ${item.name} 
-                                    <span style="font-weight:400; font-size:0.8em; color:var(--text-sub); margin-left:4px;">(~${item.rate}%)</span>
-                                </span>
+                                <span class="alloc-name">${item.name} <span style="font-weight:400; font-size:0.8em; color:var(--text-sub); margin-left:4px;">(~${item.rate}%)</span></span>
                                 <span class="alloc-amt">${displayAmt}</span>
                             </div>
                             <span class="alloc-pct">${percent}%</span>
@@ -1170,37 +843,93 @@
                             <div class="details-grid">
                                 <div class="dg-item"><small>Investment</small><div>${formatShort(item.dInvested)}</div></div>
                                 <div class="dg-item"><small>Profit</small><div class="dg-highlight">${formatShort(item.dProfit)}</div></div>
-                                <div class="dg-item"><small>Total</small><div>${formatShort(item.dValue)}</div></div>
+                                <div class="dg-item"><small>Total AUM</small><div>${formatShort(item.dValue)}</div></div>
                             </div>
                         </div>
                     </div>
                 `;
             });
 
-            // Update Chart
             drawDonut(portfolio);
 
-            // Update Main Projections
+            // Accumulation Summary Updates
             const totalProfit = totalValue - totalInvested;
-            const fmtTotal = formatMoney(totalValue);
-            
             document.getElementById('valInvested').innerText = formatMoney(totalInvested);
             document.getElementById('valReturns').innerText = "+" + formatMoney(totalProfit);
-            document.getElementById('valTotal').innerText = fmtTotal;
-            document.getElementById('mobValTotal').innerText = fmtTotal;
+            document.getElementById('valTotal').innerText = formatMoney(totalValue);
             
-            // Update Split Bar Widths
             const pctInvested = totalValue > 0 ? (totalInvested / totalValue) * 100 : 0;
             const pctReturns = totalValue > 0 ? (totalProfit / totalValue) * 100 : 0;
-            
             document.getElementById('barInvested').style.width = pctInvested + "%";
             document.getElementById('barReturns').style.width = pctReturns + "%";
+
+            // --- SWP LOGIC ---
+            if (isSWP) {
+                document.getElementById('lblTotalValue').innerText = "AUM Before SWP";
+                
+                const swpYears = parseInt(document.getElementById('swpYearsInput').value);
+                const swpType = document.getElementById('swpType').value;
+                const swpInputVal = parseFloat(swpType === 'fixed' ? document.getElementById('swpValueFixed').value : document.getElementById('swpValuePercent').value) || 0;
+                
+                const weightedAnnualRate = totalValue > 0 ? (sumWeightedRate / totalValue) : 0;
+                const monthlyRate = weightedAnnualRate / 100 / 12;
+                
+                // If it's percentage, calculate the monthly equivalent of the Annual % of Starting AUM
+                const monthlySWP = swpType === 'fixed' ? swpInputVal : (totalValue * (swpInputVal / 100)) / 12;
+
+                let remainingAUM = totalValue;
+                let totalWithdrawn = 0;
+                let installments = 0;
+                let totalMonths = swpYears * 12;
+                let isDepleted = false;
+                
+                for (let m = 1; m <= totalMonths; m++) {
+                    // Compound first, then withdraw
+                    remainingAUM = remainingAUM * (1 + monthlyRate);
+                    
+                    if (remainingAUM >= monthlySWP) {
+                        remainingAUM -= monthlySWP;
+                        totalWithdrawn += monthlySWP;
+                        installments++;
+                    } else {
+                        // Takes whatever is left
+                        totalWithdrawn += remainingAUM;
+                        installments++; 
+                        remainingAUM = 0;
+                        isDepleted = true;
+                        break; 
+                    }
+                }
+
+                let grandTotal = totalWithdrawn + remainingAUM;
+
+                document.getElementById('swpInstallments').innerText = installments + " / " + totalMonths;
+                document.getElementById('swpWithdrawn').innerText = formatMoney(totalWithdrawn);
+                document.getElementById('swpRemaining').innerText = formatMoney(remainingAUM);
+                document.getElementById('swpGrandTotal').innerText = formatMoney(grandTotal);
+                
+                const warnEl = document.getElementById('swpDepletedWarning');
+                if (isDepleted) {
+                    warnEl.style.display = "block";
+                    document.getElementById('swpDepletedMonth').innerText = installments;
+                } else {
+                    warnEl.style.display = "none";
+                }
+                
+                // Sticky Footer Updates
+                document.getElementById('mobLabel').innerText = "SWP Grand Total";
+                document.getElementById('mobValTotal').innerText = formatMoney(grandTotal);
+                
+            } else {
+                document.getElementById('lblTotalValue').innerText = "Total Value";
+                document.getElementById('mobLabel').innerText = "Projected Value";
+                document.getElementById('mobValTotal').innerText = formatMoney(totalValue);
+            }
         }
 
         function drawDonut(portfolio) {
             const chart = document.getElementById('donutChart');
-            let currentAngle = 0;
-            let gradStr = "";
+            let currentAngle = 0; let gradStr = "";
             portfolio.forEach(p => {
                 const deg = p.pct * 360;
                 const endAngle = currentAngle + deg;
